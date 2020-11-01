@@ -2,6 +2,8 @@ from pathlib import Path
 import logging
 import pandas as pd
 import geopandas as gpd
+import janitor
+
 # import matplotlib.pyplot as plt
 import requests
 import zipfile
@@ -9,13 +11,14 @@ import uuid
 import glob
 import os
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
+
 
 class DataPrep:
     """CBAnalysis can download and analyze
-    data for Citi Bike planner. It is modular for use with Airflow or simple scripts
-"""
-    def __init__(self, start_cwd):
+    data for Citi Bike planner. It is modular for use with Airflow or simple scripts"""
+
+    def __init__(self, start_cwd="./temp/"):
         """Initialize a CBAnalysis instance with the cwd
 
         Args:
@@ -33,7 +36,6 @@ class DataPrep:
         logging.info(f"CWD IS {os.getcwd()}")
         os.chdir(start_cwd)
         logging.info(f"CWD changed to {os.getcwd()}")
-
 
     def download_ride_zip(
         self, output=Path("temp/csv/"), year=2020, month=8, use_jc=False
@@ -74,9 +76,12 @@ class DataPrep:
         zf = zipfile.ZipFile(path_zipfile)
         zf.extractall(output)
 
-    def concat_csvs(self, glob_string="temp/csv/*.csv", output="temp/merged"):
+    def concat_csvs(
+        self, glob_string="temp/csv/*.csv", output="temp/merged", save_temp=True
+    ):
         """glob csvs and merge them, assuming same columns"""
         if not os.path.exists("temp/csv"):
+            logging.info("CSVs not already found, creating directory")
             os.makedirs("temp/csv")
         dfs = map(
             lambda f: pd.read_csv(f, parse_dates=["starttime", "stoptime"]),
@@ -85,28 +90,39 @@ class DataPrep:
         all_months = pd.concat(dfs)
         all_months["uuid"] = uuid.uuid1()
         logging.info(f"Saving to {output}")
-        all_months.to_pickle(path=f"{output}.pickle")
+        if save_temp:
+            all_months.to_pickle(path=f"{output}.pickle")
         return all_months
 
     def load_rename_rides(
         self,
         input_merged_rides=Path("temp/merged.pickle"),
         prepped_rides=Path("./temp/merged_prepped.pickle"),
+        save_temp=True,
     ):
-        def create_date_columns(self, df, orientation="start"):
+        """Loads concatted rides ride files
+
+        Args:
+            input_merged_rides ([type], optional): [description]. Defaults to Path("temp/merged.pickle").
+            prepped_rides ([type], optional): [description]. Defaults to Path("./temp/merged_prepped.pickle").
+            save_temp (bool, optional): [description]. Defaults to True.
+        """
+
+        def create_date_columns(df, orientation="start"):
             df = df.copy()
             df[f"{orientation}_hour"] = df[f"{orientation}time"].dt.hour
             df[f"{orientation}_day"] = df[f"{orientation}time"].dt.day
             df[f"{orientation}_weekday"] = df[f"{orientation}time"].dt.dayofweek
             return df
+
         if Path(prepped_rides).exists():
+            logger.info(f"Merged rides already exists; loading existing...")
             df = pd.read_pickle(prepped_rides)
         else:
             df = pd.read_pickle(input_merged_rides)
             df = create_date_columns(df, orientation="start")
             df = create_date_columns(df, orientation="stop")
-
-            df = df.replace({0: "unknown", 1: "male", 2: "female"})
+            df = df.replace({0: "unknown", 1: "male", 2: "female"}).clean_names()
 
             df.rename(
                 {
@@ -118,10 +134,11 @@ class DataPrep:
                 axis=1,
                 inplace=True,
             )
-            df.to_pickle(prepped_rides)
-            return df
+            if save_temp:
+                df.to_pickle(prepped_rides)
+        return df
 
-    def fetch_station_info(self):
+    def fetch_station_info(self, save_temp=True):
         """Get data on all Citi Bike stations from the Citi Bike feed API
 
         Returns:
@@ -136,7 +153,7 @@ class DataPrep:
             stations, geometry=gpd.points_from_xy(stations.lon, stations.lat)
         )
         stations_geo.set_crs(epsg=4326, inplace=True)
-        stations_geo = stations_geo.to_crs(epsg=2263)
+        # stations_geo = stations_geo.to_crs(epsg=2263)
         cols_to_keep = [
             "name",
             "rental_url",
@@ -146,18 +163,36 @@ class DataPrep:
             "short_name",
         ]
         stations_geo = stations_geo[cols_to_keep]
-        stations_geo.to_pickle(Path("./temp/stations_original.pickle"))
+        if save_temp:
+            stations_geo.to_pickle(Path("./temp/stations_original.pickle"))
         return stations_geo
 
-    def load_ntas(self, filein):
+    def load_ntas(self, save_temp=True):
         """
         Load NTA data from a NYC source
         """
-        ntas = gpd.read_file(filein, driver="ESRI Shapefile")
-        ntas.to_pickle(Path("temp/ntas_orig.pickle"))
+        # ntas = gpd.read_file(filein, driver="ESRI Shapefile")
+        ntas = gpd.read_file(
+            "https://data.cityofnewyork.us/api/geospatial/d3qk-pfyz?method=export&format=GeoJSON",
+            driver="GeoJSON",
+        ).clean_names()
+
+        if save_temp:
+            ntas.to_pickle(Path("temp/ntas_orig.pickle"))
+            ntas.to_file(Path("temp/ntas_orig.geojson"), driver="GeoJSON")
         return ntas
 
-    def sjoin_ntas_stations(self, ntas, stations):
+    def sjoin_ntas_stations(self, ntas, stations, save_temp=True):
+        """Joins NTA context data to CB station locations.
+
+        Args:
+            ntas ([type]): GeoDataFrame containing NYC NTAs
+            stations ([type]): GeoDataFrame containing citibike stations
+            save_temp (bool, optional): Outputs to the temp directory. Defaults to True.
+
+        Returns:
+            [type]: [description]
+        """
         gdf = gpd.sjoin(stations, ntas, op="intersects", how="left").loc[
             :,
             [
@@ -165,13 +200,15 @@ class DataPrep:
                 "rental_url",
                 "station_id",
                 "name",
-                "BoroName",
-                "NTAName",
-                "NTACode",
+                "boroname",
+                "ntaname",
+                "ntacode",
                 "geometry",
             ],
         ]
-        projected = gdf.to_crs(epsg=4326)
-        # projected.to_file("./temp/sjoinedrides.geojson", driver="GeoJSON")
-        projected.to_pickle("./temp/stations_with_ntas.pickle")
+        # projected = gdf.to_crs(epsg=4326)
+        projected = gdf.copy()
+        if save_temp:
+            projected.to_file("./temp/sjoinedrides.geojson", driver="GeoJSON")
+            projected.to_pickle("./temp/stations_with_ntas.pickle")
         return projected
