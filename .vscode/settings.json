@@ -1,0 +1,7 @@
+{
+  "python.testing.pytestArgs": ["tests"],
+  "python.testing.unittestEnabled": false,
+  "python.testing.nosetestsEnabled": false,
+  "python.testing.pytestEnabled": true,
+  "python.pythonPath": "/Users/riledigital/Library/Caches/pypoetry/virtualenvs/cb-analysis-0EjTBMI0-py3.8/bin/python3"
+}
