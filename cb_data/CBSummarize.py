@@ -66,6 +66,9 @@ class Summarizer:
             .apply(lambda x: x.to_dict(orient="records"))
             .to_dict()
         )
-        logger.info(f"Outputting to {output}")
+        logging.info(f"Outputting to {output}")
+        # Problem: Create the file if it ∂oesn't exist
+        if not Path("./temp/summaries").exists:
+            Path("./temp/summaries").mkdir()
         with open(output, "w+") as outfile:
             json.dump(by_hour_summary, outfile)

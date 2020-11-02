@@ -116,7 +116,7 @@ class DataPrep:
             return df
 
         if Path(prepped_rides).exists():
-            logger.info(f"Merged rides already exists; loading existing...")
+            logging.info(f"Merged rides already exists; loading existing...")
             df = pd.read_pickle(prepped_rides)
         else:
             df = pd.read_pickle(input_merged_rides)
