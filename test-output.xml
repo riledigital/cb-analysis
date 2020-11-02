@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite errors="1" failures="0" hostname="riledigital-mac.lan" name="pytest" skipped="0" tests="1" time="1.385" timestamp="2020-11-01T20:18:31.335454"><testcase classname="" file="tests/test_cb_analysis.py" name="tests.test_cb_analysis" time="0.000"><error message="collection failure">tests/test_cb_analysis.py:1: in &lt;module&gt;
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite errors="1" failures="0" hostname="riledigital-mac.lan" name="pytest" skipped="0" tests="1" time="1.883" timestamp="2020-11-01T20:19:21.923983"><testcase classname="" file="tests/test_cb_analysis.py" name="tests.test_cb_analysis" time="0.000"><error message="collection failure">tests/test_cb_analysis.py:1: in &lt;module&gt;
     from cb_data import __version__
 cb_data/__init__.py:3: in &lt;module&gt;
     import cb_data.CBDataPrep
