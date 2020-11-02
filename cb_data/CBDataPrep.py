@@ -80,6 +80,9 @@ class DataPrep:
         self, glob_string="temp/csv/*.csv", output="temp/merged", save_temp=True
     ):
         """glob csvs and merge them, assuming same columns"""
+        logging.info(f"Concatenating CSVs in {glob_string}...")
+        if len(glob.glob(glob_string)) < 1:
+            raise Exception("No CSVs to concatenate.")
         if not os.path.exists("temp/csv"):
             logging.info("CSVs not already found, creating directory")
             os.makedirs("temp/csv")
