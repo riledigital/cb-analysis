@@ -15,4 +15,5 @@ This project uses [Poetry](https://python-poetry.org/docs/basic-usage/#installin
 
 - Issue: there is no data validation going on in between steps of the script; tests should be able to correct this issue
 - If one step fails, the rest will fail (Airflow can fix this issue)
+- Returning the data in these functions enables use with Airflow XCOMs?
 - Hardcoding remote URLs into the script
