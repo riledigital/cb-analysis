@@ -14,9 +14,14 @@ import os
 logging.basicConfig(level=logging.INFO)
 
 
-class DataPrep:
+class Prepper:
     """CBAnalysis can download and analyze
     data for Citi Bike planner. It is modular for use with Airflow or simple scripts"""
+
+    self.URL_STATION_FEED = (
+        "https://gbfs.citibikenyc.com/gbfs/en/station_information.json"
+    )
+    self.URL_NYCNTAS_JSON = "https://data.cityofnewyork.us/api/geospatial/d3qk-pfyz?method=export&format=GeoJSON"
 
     def __init__(self, start_cwd="./temp/"):
         """Initialize a CBAnalysis instance with the cwd
@@ -147,9 +152,7 @@ class DataPrep:
         Returns:
             stations_geo: a DataFrame with the station geographies
         """
-        url_station_info = (
-            "https://gbfs.citibikenyc.com/gbfs/en/station_information.json"
-        )
+        url_station_info = self.URL_STATION_FEED
         r = requests.get(url_station_info)
         stations = pd.DataFrame(r.json()["data"]["stations"])
         stations_geo = gpd.GeoDataFrame(
@@ -170,13 +173,18 @@ class DataPrep:
             stations_geo.to_pickle(Path("./temp/stations_original.pickle"))
         return stations_geo
 
-    def load_ntas(self, save_temp=True):
+    def load_ntas(self, remote_url=self.URL_NYCNTAS_JSON, save_temp=True):
+        """Loads and converts NTA data from NYC remote URL.
+
+        Args:
+            remote_url ([type], optional): Set the URL to fetch GeoJSON from. Defaults to self.URL_NYCNTAS_JSON.
+            save_temp (bool, optional): Saves intermediate files. Defaults to True.
+
+        Returns:
+            [type]: [description]
         """
-        Load NTA data from a NYC source
-        """
-        # ntas = gpd.read_file(filein, driver="ESRI Shapefile")
         ntas = gpd.read_file(
-            "https://data.cityofnewyork.us/api/geospatial/d3qk-pfyz?method=export&format=GeoJSON",
+            remote_url,
             driver="GeoJSON",
         ).clean_names()
 

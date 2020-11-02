@@ -1,7 +1,7 @@
 from cb_data import CBDataPrep
 from cb_data import CBSummarize
 
-dp = CBDataPrep.DataPrep()
+dp = CBDataPrep.Prepper()
 summarizer = CBSummarize.Summarizer()
 
 # dp.download_ride_zip()
