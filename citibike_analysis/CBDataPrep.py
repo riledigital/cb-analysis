@@ -18,10 +18,8 @@ class Prepper:
     """CBAnalysis can download and analyze
     data for Citi Bike planner. It is modular for use with Airflow or simple scripts"""
 
-    self.URL_STATION_FEED = (
-        "https://gbfs.citibikenyc.com/gbfs/en/station_information.json"
-    )
-    self.URL_NYCNTAS_JSON = "https://data.cityofnewyork.us/api/geospatial/d3qk-pfyz?method=export&format=GeoJSON"
+    URL_STATION_FEED = "https://gbfs.citibikenyc.com/gbfs/en/station_information.json"
+    URL_NYCNTAS_JSON = "https://data.cityofnewyork.us/api/geospatial/d3qk-pfyz?method=export&format=GeoJSON"
 
     def __init__(self, start_cwd="./temp/"):
         """Initialize a CBAnalysis instance with the cwd
@@ -173,7 +171,7 @@ class Prepper:
             stations_geo.to_pickle(Path("./temp/stations_original.pickle"))
         return stations_geo
 
-    def load_ntas(self, remote_url=self.URL_NYCNTAS_JSON, save_temp=True):
+    def load_ntas(self, remote_url=URL_NYCNTAS_JSON, save_temp=True):
         """Loads and converts NTA data from NYC remote URL.
 
         Args:

@@ -1,5 +1,5 @@
-from cb_data import CBDataPrep
-from cb_data import CBSummarize
+from citibike_analysis import CBDataPrep
+from citibike_analysis import CBSummarize
 
 dp = CBDataPrep.Prepper()
 summarizer = CBSummarize.Summarizer()

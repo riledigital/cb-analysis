@@ -1,9 +1,1 @@
-<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite errors="1" failures="0" hostname="riledigital-mac.lan" name="pytest" skipped="0" tests="1" time="1.883" timestamp="2020-11-01T20:19:21.923983"><testcase classname="" file="tests/test_cb_analysis.py" name="tests.test_cb_analysis" time="0.000"><error message="collection failure">tests/test_cb_analysis.py:1: in &lt;module&gt;
-    from cb_data import __version__
-cb_data/__init__.py:3: in &lt;module&gt;
-    import cb_data.CBDataPrep
-cb_data/CBDataPrep.py:17: in &lt;module&gt;
-    class Prepper:
-cb_data/CBDataPrep.py:21: in Prepper
-    self.URL_STATION_FEED = (
-E   NameError: name &apos;self&apos; is not defined</error></testcase></testsuite></testsuites>
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite errors="0" failures="0" hostname="riledigital-mac.lan" name="pytest" skipped="0" tests="0" time="1.039" timestamp="2020-11-07T23:05:00.705315"></testsuite></testsuites>

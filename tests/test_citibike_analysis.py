@@ -1,9 +1,9 @@
-from cb_data import __version__
+from citibike_analysis import __version__
 from pathlib import Path
-import cb_data.CBDataPrep as dp
+import citibike_analysis.CBDataPrep as dp
 import os
 
-cb = dp.DataPrep(start_cwd=Path("./.."))
+cb = dp.Prepper(start_cwd=Path("./.."))
 
 
 def test_version():
