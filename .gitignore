@@ -143,3 +143,4 @@ cython_debug/
 test-output.xml
 
 .gitignore
+test-output.xml

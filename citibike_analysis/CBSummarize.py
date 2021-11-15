@@ -6,12 +6,10 @@ import geopandas as gpd
 from pathlib import Path
 from shapely import wkt
 import json
-import janitor
 import numpy as np
 import logging
 
 logging.basicConfig(level=logging.INFO)
-
 
 class Summarizer:
     def __init__(self, start_cwd="./"):

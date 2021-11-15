@@ -1,10 +1,9 @@
 from citibike_analysis.utils import touchdir
-from tempfile import TemporaryDirectory, NamedTemporaryFile
+from tempfile import TemporaryDirectory
 from pathlib import Path
 import logging
 import pandas as pd
 import geopandas as gpd
-import janitor
 
 # import matplotlib.pyplot as plt
 import requests
