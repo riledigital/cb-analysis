@@ -1,3 +1,5 @@
+from citibike_analysis.utils import touchdir
+from tempfile import TemporaryDirectory, NamedTemporaryFile
 from pathlib import Path
 import logging
 import pandas as pd
@@ -21,7 +23,7 @@ class Prepper:
     URL_STATION_FEED = "https://gbfs.citibikenyc.com/gbfs/en/station_information.json"
     URL_NYCNTAS_JSON = "https://data.cityofnewyork.us/api/geospatial/d3qk-pfyz?method=export&format=GeoJSON"
 
-    def __init__(self, start_cwd="./temp/"):
+    def __init__(self, start_cwd):
         """Initialize a CBAnalysis instance with the cwd
 
         Args:
@@ -31,22 +33,26 @@ class Prepper:
             [type]: [description]
         """
 
-        self.start_cwd = start_cwd
-        self.path_input = ""
-        self.path_tmp = ""
-        self.path_output = ""
+        self.tempdir = TemporaryDirectory()
+        self.start_cwd = start_cwd or self.tempdir
+        self.dir_zip = 'zip'
+        touchdir(self.dir_zip)
+        self.dir_csv = 'csv'
+        touchdir(self.dir_csv)
+        self.dir_out = 'out'
+        touchdir(self.dir_out)
         logging.info("Downloading data")
         logging.info(f"CWD IS {os.getcwd()}")
         os.chdir(start_cwd)
         logging.info(f"CWD changed to {os.getcwd()}")
 
     def download_ride_zip(
-        self, output=Path("temp/csv/"), year=2020, month=8, use_jc=False
+        self, output=Path("csv/"), year=2020, month=8, use_jc=False
     ):
         """Downloads ZIP files and unzips them to output
 
         Args:
-            output ([type], optional): [description]. Defaults to Path("temp/csv/").
+            output ([type], optional): [description]. Defaults to Path("csv/").
             year (int, optional): [description]. Defaults to 2020.
             month (int, optional): [description]. Defaults to 8.
             use_jc (bool, optional): Download Jersey City files. Defaults to False.
@@ -55,40 +61,40 @@ class Prepper:
             [type]: [description]
         """
         base = "https://s3.amazonaws.com/tripdata/"
-        if not os.path.exists("temp/zip"):
-            logging.warn("Created zip folder")
-            os.makedirs("temp/zip")
+        touchdir('zip')
 
         def make_url(year, month):
             return (
                 f"{'JC-' if use_jc else ''}{year}{month:0>2}-citibike-tripdata.csv.zip"
             )
 
-        if Path(make_url(year, month)).exists():
+        filename = make_url(year, month)
+        zipfile_path = Path(self.dir_zip) / Path(filename)
+        if zipfile_path.exists():
             logging.warn("Already downloaded some zips... skipping early.")
             return None
 
-        filename = make_url(year, month)
-
+        logging.info(f"Downloading zip: {base + filename}")
         resp = requests.get(base + filename, stream=True)
-        path_zipfile = f"./temp/zip/{filename}"
+        path_zipfile = Path(f"./zip/{filename}")
         with open(path_zipfile, "wb") as fd:
             for chunk in resp.iter_content(chunk_size=128):
                 fd.write(chunk)
 
+        logging.info(f"Extract csv: {self.dir_csv}/{base + filename}")
         zf = zipfile.ZipFile(path_zipfile)
-        zf.extractall(output)
+        zf.extractall(self.dir_csv)
 
     def concat_csvs(
-        self, glob_string="temp/csv/*.csv", output="temp/merged", save_temp=True
+        self, glob_string="csv/*.csv", output="merged", save_temp=True
     ):
         """glob csvs and merge them, assuming same columns"""
         logging.info(f"Concatenating CSVs in {glob_string}...")
         if len(glob.glob(glob_string)) < 1:
             raise Exception("No CSVs to concatenate.")
-        if not os.path.exists("temp/csv"):
+        if not os.path.exists("csv"):
             logging.info("CSVs not already found, creating directory")
-            os.makedirs("temp/csv")
+            os.makedirs("csv")
         dfs = map(
             lambda f: pd.read_csv(f, parse_dates=["starttime", "stoptime"]),
             glob.glob(glob_string),
@@ -102,15 +108,15 @@ class Prepper:
 
     def load_rename_rides(
         self,
-        input_merged_rides=Path("temp/merged.pickle"),
-        prepped_rides=Path("./temp/merged_prepped.pickle"),
+        input_merged_rides=Path("merged.pickle"),
+        prepped_rides=Path("./merged_prepped.pickle"),
         save_temp=True,
     ):
         """Loads concatted rides ride files
 
         Args:
-            input_merged_rides ([type], optional): [description]. Defaults to Path("temp/merged.pickle").
-            prepped_rides ([type], optional): [description]. Defaults to Path("./temp/merged_prepped.pickle").
+            input_merged_rides ([type], optional): [description]. Defaults to Path("merged.pickle").
+            prepped_rides ([type], optional): [description]. Defaults to Path("./merged_prepped.pickle").
             save_temp (bool, optional): [description]. Defaults to True.
         """
 
@@ -151,8 +157,9 @@ class Prepper:
             stations_geo: a DataFrame with the station geographies
         """
         url_station_info = self.URL_STATION_FEED
-        r = requests.get(url_station_info)
-        stations = pd.DataFrame(r.json()["data"]["stations"])
+        resp = requests.get(url_station_info)
+        resp_data = resp.json()
+        stations = pd.DataFrame(resp_data["data"]["stations"])
         stations_geo = gpd.GeoDataFrame(
             stations, geometry=gpd.points_from_xy(stations.lon, stations.lat)
         )
@@ -160,7 +167,6 @@ class Prepper:
         # stations_geo = stations_geo.to_crs(epsg=2263)
         cols_to_keep = [
             "name",
-            "rental_url",
             "legacy_id",
             "station_id",
             "geometry",
@@ -168,7 +174,7 @@ class Prepper:
         ]
         stations_geo = stations_geo[cols_to_keep]
         if save_temp:
-            stations_geo.to_pickle(Path("./temp/stations_original.pickle"))
+            stations_geo.to_pickle(Path("./stations_original.pickle"))
         return stations_geo
 
     def load_ntas(self, remote_url=URL_NYCNTAS_JSON, save_temp=True):
@@ -187,8 +193,8 @@ class Prepper:
         ).clean_names()
 
         if save_temp:
-            ntas.to_pickle(Path("temp/ntas_orig.pickle"))
-            ntas.to_file(Path("temp/ntas_orig.geojson"), driver="GeoJSON")
+            ntas.to_pickle(Path("ntas_orig.pickle"))
+            ntas.to_file(Path("ntas_orig.geojson"), driver="GeoJSON")
         return ntas
 
     def sjoin_ntas_stations(self, ntas, stations, save_temp=True):
@@ -206,7 +212,6 @@ class Prepper:
             :,
             [
                 "short_name",
-                "rental_url",
                 "station_id",
                 "name",
                 "boroname",
@@ -218,6 +223,6 @@ class Prepper:
         # projected = gdf.to_crs(epsg=4326)
         projected = gdf.copy()
         if save_temp:
-            projected.to_file("./temp/sjoinedrides.geojson", driver="GeoJSON")
-            projected.to_pickle("./temp/stations_with_ntas.pickle")
+            projected.to_file("./sjoinedrides.geojson", driver="GeoJSON")
+            projected.to_pickle("./stations_with_ntas.pickle")
         return projected

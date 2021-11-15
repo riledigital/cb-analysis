@@ -8,12 +8,8 @@ These scripts are used to automatically download and create summary files for th
 
 This project uses [Poetry](https://python-poetry.org/docs/basic-usage/#installing-dependencies) for dependencies and package management.
 
+- Use `pyenv` to install and switch to Python 3.8.12
+- Note: `rtree` or `geopandas` might fail without `libspatialindex` installed. Use a system package manager to install. `brew install spatialindex`.
 - Run `poetry install` to create a virtualenv + install dependencies.
+- Set VSCode Python environment to the output of `poetry env info` under Virtualenv path to enable VSCode debugger.
 - Tests run with `pytest`
-
-# Notes on Airflow
-
-- Issue: there is no data validation going on in between steps of the script; tests should be able to correct this issue
-- If one step fails, the rest will fail (Airflow can fix this issue)
-- Returning the data in these functions enables use with Airflow XCOMs?
-- Hardcoding remote URLs into the script

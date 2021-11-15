@@ -1,4 +1,5 @@
 # from pandas.tseries.offsets import DateOffset
+from citibike_analysis.utils import touchdir
 import numpy as np
 import pandas as pd
 import geopandas as gpd
@@ -13,7 +14,8 @@ logging.basicConfig(level=logging.INFO)
 
 
 class Summarizer:
-    def __init__(self, start_cwd="./temp/"):
+    def __init__(self, start_cwd="./"):
+        touchdir('summary')
         pass
 
     def agg_by_hour(self, df, orient="start", station=None) -> pd.DataFrame:
@@ -53,7 +55,7 @@ class Summarizer:
             idx = pd.IndexSlice
             return by_hr.loc[idx[station, :, :]]
 
-    def export_by_hour_json(self, df, output="./temp/summaries/aggs_by_hour.json"):
+    def export_by_hour_json(self, df, output="./summary/aggs_by_hour.json"):
         by_hour_summary = (
             df.reset_index()
             .groupby(["start_station_id", "start_hour"])
@@ -68,7 +70,7 @@ class Summarizer:
         )
         logging.info(f"Outputting to {output}")
         # Problem: Create the file if it ∂oesn't exist
-        if not Path("./temp/summaries").exists:
-            Path("./temp/summaries").mkdir()
+        if not Path("./summary").exists:
+            Path("./summary").mkdir()
         with open(output, "w+") as outfile:
             json.dump(by_hour_summary, outfile)
