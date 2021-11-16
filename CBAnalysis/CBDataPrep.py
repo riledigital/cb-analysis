@@ -1,9 +1,11 @@
-from citibike_analysis.utils import touchdir
+
 from tempfile import TemporaryDirectory
 from pathlib import Path
 import logging
 import pandas as pd
 import geopandas as gpd
+# modifies pandas
+import janitor
 
 # import matplotlib.pyplot as plt
 import requests
@@ -22,7 +24,7 @@ class Prepper:
     URL_STATION_FEED = "https://gbfs.citibikenyc.com/gbfs/en/station_information.json"
     URL_NYCNTAS_JSON = "https://data.cityofnewyork.us/api/geospatial/d3qk-pfyz?method=export&format=GeoJSON"
 
-    def __init__(self, start_cwd):
+    def __init__(self, dir_cwd, dir_zip, dir_csv, dir_out):
         """Initialize a CBAnalysis instance with the cwd
 
         Args:
@@ -31,19 +33,10 @@ class Prepper:
         Returns:
             [type]: [description]
         """
-
-        self.tempdir = TemporaryDirectory()
-        self.start_cwd = start_cwd or self.tempdir
-        self.dir_zip = 'zip'
-        touchdir(self.dir_zip)
-        self.dir_csv = 'csv'
-        touchdir(self.dir_csv)
-        self.dir_out = 'out'
-        touchdir(self.dir_out)
-        logging.info("Downloading data")
-        logging.info(f"CWD IS {os.getcwd()}")
-        os.chdir(start_cwd)
-        logging.info(f"CWD changed to {os.getcwd()}")
+        self.dir_cwd = dir_cwd
+        self.dir_zip = dir_zip
+        self.dir_csv = dir_csv
+        self.dir_out = dir_out
 
     def download_ride_zip(
         self, output=Path("csv/"), year=2020, month=8, use_jc=False
@@ -68,14 +61,14 @@ class Prepper:
             )
 
         filename = make_url(year, month)
-        zipfile_path = Path(self.dir_zip) / Path(filename)
+        zipfile_path = self.dir_zip / Path(filename)
         if zipfile_path.exists():
             logging.warn("Already downloaded some zips... skipping early.")
             return None
 
         logging.info(f"Downloading zip: {base + filename}")
         resp = requests.get(base + filename, stream=True)
-        path_zipfile = Path(f"./zip/{filename}")
+        path_zipfile =  self.dir_zip / Path(filename)
         with open(path_zipfile, "wb") as fd:
             for chunk in resp.iter_content(chunk_size=128):
                 fd.write(chunk)
@@ -221,7 +214,9 @@ class Prepper:
         ]
         # projected = gdf.to_crs(epsg=4326)
         projected = gdf.copy()
+        output = Path(self.dir_out) / "stations-with-nta.geojson"
+        logging.info(f"Saving stations with NTAs: {output}")
+        projected.to_file(output, driver="GeoJSON")
         if save_temp:
-            projected.to_file("./sjoinedrides.geojson", driver="GeoJSON")
-            projected.to_pickle("./stations_with_ntas.pickle")
+            projected.to_pickle("./stations-with-nta.pickle")
         return projected

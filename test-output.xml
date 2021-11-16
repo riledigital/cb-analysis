@@ -1,1 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite errors="0" failures="0" hostname="bluecadet-ri.local" name="pytest" skipped="0" tests="0" time="0.436" timestamp="2021-11-14T20:04:44.445813"></testsuite></testsuites>
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite errors="1" failures="0" hostname="bluecadet-ri.local" name="pytest" skipped="0" tests="1" time="0.134" timestamp="2021-11-15T21:26:40.461618"><testcase classname="" file="tests/test_citibike_analysis.py" name="tests.test_citibike_analysis" time="0.000"><error message="collection failure">ImportError while importing test module &apos;/Users/ri/Dev/_personal/cb-analysis/tests/test_citibike_analysis.py&apos;.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+tests/test_citibike_analysis.py:1: in &lt;module&gt;
+    from citibike_analysis import __version__
+E   ModuleNotFoundError: No module named &apos;citibike_analysis&apos;</error></testcase></testsuite></testsuites>
