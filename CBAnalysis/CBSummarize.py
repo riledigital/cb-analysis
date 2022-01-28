@@ -63,7 +63,7 @@ class Summarizer:
             idx = pd.IndexSlice
             return by_hr.loc[idx[station, :, :]]
 
-    def export_by_hour_json(self, df, output):
+    def export_by_hour_json(self, df):
         output = self.dir_summary / "./aggs_by_hour.json"
         by_hour_summary = (
             df.reset_index()

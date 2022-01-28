@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite errors="1" failures="0" hostname="bluecadet-ri.local" name="pytest" skipped="0" tests="1" time="0.134" timestamp="2021-11-15T21:26:40.461618"><testcase classname="" file="tests/test_citibike_analysis.py" name="tests.test_citibike_analysis" time="0.000"><error message="collection failure">ImportError while importing test module &apos;/Users/ri/Dev/_personal/cb-analysis/tests/test_citibike_analysis.py&apos;.
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite errors="1" failures="0" hostname="bluecadet-ri.local" name="pytest" skipped="0" tests="1" time="0.122" timestamp="2022-01-27T20:22:22.598243"><testcase classname="" file="tests/test_citibike_analysis.py" name="tests.test_citibike_analysis" time="0.000"><error message="collection failure">ImportError while importing test module &apos;/Users/ri/Dev/_personal/cb-analysis/tests/test_citibike_analysis.py&apos;.
 Hint: make sure your test modules/packages have valid Python names.
 Traceback:
 tests/test_citibike_analysis.py:1: in &lt;module&gt;

@@ -48,8 +48,8 @@ class CBAnalysis:
         ntas = dp.load_ntas()
         stations_with_nta = dp.sjoin_ntas_stations(ntas, stations)
 
-        # aggregated_rides = summarizer.agg_by_hour(df)
-        # summarizer.export_by_hour_json(aggregated_rides)
+        aggregated_rides = summarizer.agg_by_hour(df)
+        summarizer.export_by_hour_json(aggregated_rides)
         
 if __name__ == "__main__":
     # Script mode
