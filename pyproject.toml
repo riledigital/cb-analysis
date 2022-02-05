@@ -20,10 +20,12 @@ tqdm = "^4.62.3"
 [tool.poetry.dev-dependencies]
 pylint = "^2.6.0"
 pytest = "^5.2"
-black = {version = "^20.8b1", allow-prereleases = true}
+black = "^22.1.0"
+
 
 [tool.poetry.scripts]
-cli = "CBAnalysis:main"
+lint = "pylint:run_pylint"
+run = "cbanalysis:main"
 test = "pytest:main"
 
 [build-system]

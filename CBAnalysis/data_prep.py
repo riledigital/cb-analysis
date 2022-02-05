@@ -4,6 +4,7 @@ from pathlib import Path
 import logging
 import pandas as pd
 import geopandas as gpd
+
 # modifies pandas
 import janitor
 
@@ -39,9 +40,7 @@ class Prepper:
         self.dir_csv = dir_csv
         self.dir_out = dir_out
 
-    def download_ride_zip(
-        self, output=Path("csv/"), year=2020, month=8, use_jc=False
-    ):
+    def download_ride_zip(self, output=Path("csv/"), year=2020, month=8, use_jc=False):
         """Downloads ZIP files and unzips them to output
 
         Args:
@@ -54,7 +53,7 @@ class Prepper:
             [type]: [description]
         """
         base = "https://s3.amazonaws.com/tripdata/"
-        touchdir('zip')
+        touchdir("zip")
 
         def make_url(year, month):
             return (
@@ -69,10 +68,10 @@ class Prepper:
 
         logging.info(f"Downloading zip: {base + filename}")
         resp = requests.get(base + filename, stream=True)
-        total_size_in_bytes= int(resp.headers.get('content-length', 0))
-        path_zipfile =  self.dir_zip / Path(filename)
-        block_size = 128 #1 Kibibyte
-        progress_bar = tqdm(total=total_size_in_bytes, unit='iB', unit_scale=True)
+        total_size_in_bytes = int(resp.headers.get("content-length", 0))
+        path_zipfile = self.dir_zip / Path(filename)
+        block_size = 128  # 1 Kibibyte
+        progress_bar = tqdm(total=total_size_in_bytes, unit="iB", unit_scale=True)
         with open(path_zipfile, "wb") as fd:
             for chunk in resp.iter_content(chunk_size=128):
                 fd.write(chunk)
@@ -85,9 +84,7 @@ class Prepper:
         zf = zipfile.ZipFile(path_zipfile)
         zf.extractall(self.dir_csv)
 
-    def concat_csvs(
-        self, glob_string="csv/*.csv", output="merged", save_temp=True
-    ):
+    def concat_csvs(self, glob_string="csv/*.csv", output="merged", save_temp=True):
         """glob csvs and merge them, assuming same columns"""
         logging.info(f"Concatenating CSVs in {glob_string}...")
         if len(glob.glob(glob_string)) < 1:
@@ -228,5 +225,3 @@ class Prepper:
         if save_temp:
             projected.to_pickle("./stations-with-nta.pickle")
         return projected
-        
-        

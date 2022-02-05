@@ -3,13 +3,13 @@
   "python.testing.unittestEnabled": false,
   "python.testing.nosetestsEnabled": false,
   "python.testing.pytestEnabled": true,
-  "python.pythonPath": "/Users/riledigital/Library/Caches/pypoetry/virtualenvs/cb-analysis-0EjTBMI0-py3.8/bin/python3",
   "editor.defaultFormatter": "ms-python.python",
   "editor.formatOnPaste": true,
   "editor.formatOnSave": true,
   "python.formatting.provider": "black",
-  "python.formatting.blackPath": "/Users/riledigital/Library/Caches/pypoetry/virtualenvs/cb-analysis-0EjTBMI0-py3.8/bin/black",
+
   "[ignore]": {
     "editor.defaultFormatter": "foxundermoon.shell-format"
-  }
+  },
+  "python.terminal.activateEnvInCurrentTerminal": true
 }

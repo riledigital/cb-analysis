@@ -1,5 +1,6 @@
 __version__ = "0.1.0"
 import logging
+
 logging.info(f"Version: {__version__}")
 
 from .main import Main

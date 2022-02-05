@@ -10,8 +10,16 @@ import logging
 
 logging.basicConfig(level=logging.INFO)
 
+
 class Summarizer:
-    def __init__(self, dir_cwd: Path, dir_zip: Path, dir_csv: Path, dir_out: Path, dir_summary: Path):
+    def __init__(
+        self,
+        dir_cwd: Path,
+        dir_zip: Path,
+        dir_csv: Path,
+        dir_out: Path,
+        dir_summary: Path,
+    ):
         """Initialize a CBAnalysis instance with the cwd
 
         Args:
@@ -62,7 +70,7 @@ class Summarizer:
         else:
             idx = pd.IndexSlice
             return by_hr.loc[idx[station, :, :]]
-    
+
     def compute_aggs_by_hour(self, df):
         by_hour_summary = (
             df.reset_index()
@@ -77,7 +85,6 @@ class Summarizer:
             .to_dict()
         )
         return by_hour_summary
-
 
     def export_by_hour_json(self, df):
         output = self.dir_summary / "./aggs_by_hour.json"
@@ -99,4 +106,3 @@ class Summarizer:
             self.dir_summary.mkdir()
         with open(output, "w+") as outfile:
             json.dump(by_hour_summary, outfile)
-

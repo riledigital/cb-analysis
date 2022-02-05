@@ -1,9 +1,7 @@
-from CBAnalysis import __version__
+from cbanalysis import __version__
 from pathlib import Path
-import CBAnalysis.data_prep as dp
+from cbanalysis import Prepper
 import os
-
-cb = dp.Prepper(start_cwd=Path("./.."))
 
 
 def test_version():
@@ -12,6 +10,7 @@ def test_version():
 
 class TestDownloading:
     def test_download(self):
+        # prepper = Prepper(start_cwd=Path("./.."))
         """download file and check if it exists in the temp directory"""
-        cb.download_ride_zip()
+        # prepper.download_ride_zip()
         assert Path("temp/csv/").exists()
