@@ -8,7 +8,7 @@
       "name": "Python: Script",
       "type": "python",
       "request": "launch",
-      "program": "${workspaceFolder}/scripts/script_run_downloads.py",
+      "program": "${workspaceFolder}/scripts/run.py",
       "console": "integratedTerminal"
     },
     {

@@ -62,6 +62,22 @@ class Summarizer:
         else:
             idx = pd.IndexSlice
             return by_hr.loc[idx[station, :, :]]
+    
+    def compute_aggs_by_hour(self, df):
+        by_hour_summary = (
+            df.reset_index()
+            .groupby(["start_station_id", "start_hour"])
+            .mean()
+            .drop("start_weekday", axis=1)
+            .rename({"sum": "mean_rides"}, axis=1)
+            .reset_index()
+            .round(1)
+            .groupby("start_station_id")
+            .apply(lambda x: x.to_dict(orient="records"))
+            .to_dict()
+        )
+        return by_hour_summary
+
 
     def export_by_hour_json(self, df):
         output = self.dir_summary / "./aggs_by_hour.json"

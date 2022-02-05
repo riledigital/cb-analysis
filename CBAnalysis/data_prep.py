@@ -1,4 +1,4 @@
-
+from tqdm import tqdm
 from tempfile import TemporaryDirectory
 from pathlib import Path
 import logging
@@ -13,6 +13,7 @@ import zipfile
 import uuid
 import glob
 import os
+from .utils import touchdir
 
 logging.basicConfig(level=logging.INFO)
 
@@ -68,10 +69,17 @@ class Prepper:
 
         logging.info(f"Downloading zip: {base + filename}")
         resp = requests.get(base + filename, stream=True)
+        total_size_in_bytes= int(resp.headers.get('content-length', 0))
         path_zipfile =  self.dir_zip / Path(filename)
+        block_size = 128 #1 Kibibyte
+        progress_bar = tqdm(total=total_size_in_bytes, unit='iB', unit_scale=True)
         with open(path_zipfile, "wb") as fd:
             for chunk in resp.iter_content(chunk_size=128):
                 fd.write(chunk)
+                progress_bar.update(len(chunk))
+        progress_bar.close()
+        if total_size_in_bytes != 0 and progress_bar.n != total_size_in_bytes:
+            print("ERROR, something went wrong")
 
         logging.info(f"Extract csv: {self.dir_csv}/{base + filename}")
         zf = zipfile.ZipFile(path_zipfile)
@@ -100,8 +108,8 @@ class Prepper:
 
     def load_rename_rides(
         self,
-        input_merged_rides=Path("merged.pickle"),
-        prepped_rides=Path("./merged_prepped.pickle"),
+        input_merged_rides="./merged.pickle",
+        prepped_rides="./merged_prepped.pickle",
         save_temp=True,
     ):
         """Loads concatted rides ride files
@@ -166,7 +174,7 @@ class Prepper:
         ]
         stations_geo = stations_geo[cols_to_keep]
         if save_temp:
-            stations_geo.to_pickle(Path("./stations_original.pickle"))
+            stations_geo.to_pickle(Path(self.dir_cwd.name) / "stations_original.pickle")
         return stations_geo
 
     def load_ntas(self, remote_url=URL_NYCNTAS_JSON, save_temp=True):

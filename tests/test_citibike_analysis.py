@@ -1,6 +1,6 @@
-from citibike_analysis import __version__
+from CBAnalysis import __version__
 from pathlib import Path
-import citibike_analysis.CBDataPrep as dp
+import CBAnalysis.data_prep as dp
 import os
 
 cb = dp.Prepper(start_cwd=Path("./.."))
