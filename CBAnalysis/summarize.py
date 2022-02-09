@@ -71,7 +71,51 @@ class Summarizer:
             idx = pd.IndexSlice
             return by_hr.loc[idx[station, :, :]]
 
+    def count_stations_per_nta(df: pd.DataFrame) -> pd.DataFrame:
+        """Given a df of rides with NTAs identified, count # of stations per NTA.
+
+        Args:
+            df ([type]): DataFrame of rides
+
+        Returns:
+            pd.DataFrame: [description] DataFrame
+        """
+        stations_per_nta = (
+            df[["ntacode", "start_station_id"]]
+            .groupby("ntacode")[["start_station_id"]]
+            .nunique()
+            .reset_index()
+            .set_index("ntacode")
+            .rename({"start_station_id": "stations_count"}, axis=1)
+        )
+        return stations_per_nta
+
+    # Given df of rides with NTA's joined, count the number of rides and rank them within each group.
+    def rank_stations_by_nta(df, df_stations_per_nta):
+        stations_ranked_by_nta = (
+            df[["uuid", "ntacode", "start_station_id"]]
+            .groupby(["ntacode", "start_station_id"])
+            .count()
+            .sort_values(by=["ntacode", "uuid"], ascending=False)
+            .groupby(["ntacode"])
+            .rank(method="dense", ascending=False, pct=False)
+            .reset_index()
+            .rename({"uuid": "station_rank"}, axis=1)
+            .merge(df_stations_per_nta, on="ntacode", how="left")
+            .set_index("start_station_id")
+        )
+
+        return stations_ranked_by_nta
+
     def compute_aggs_by_hour(self, df):
+        """Given all rides, compute the average # of new started rides per hour
+
+        Args:
+            df ([type]): [description]
+
+        Returns:
+            [type]: [description]
+        """
         by_hour_summary = (
             df.reset_index()
             .groupby(["start_station_id", "start_hour"])
@@ -87,6 +131,11 @@ class Summarizer:
         return by_hour_summary
 
     def export_by_hour_json(self, df):
+        """Given all rides, compute aggregations by the hour and export to JSON
+
+        Args:
+            df ([type]): [description]
+        """
         output = self.dir_summary / "./aggs_by_hour.json"
         by_hour_summary = (
             df.reset_index()
