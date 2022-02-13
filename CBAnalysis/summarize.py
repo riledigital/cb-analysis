@@ -12,14 +12,7 @@ logging.basicConfig(level=logging.INFO)
 
 
 class Summarizer:
-    def __init__(
-        self,
-        dir_cwd: Path,
-        dir_zip: Path,
-        dir_csv: Path,
-        dir_out: Path,
-        dir_summary: Path,
-    ):
+    def __init__(self, paths: Path):
         """Initialize a CBAnalysis instance with the cwd
 
         Args:
@@ -28,11 +21,7 @@ class Summarizer:
         Returns:
             [type]: [description]
         """
-        self.dir_cwd = dir_cwd
-        self.dir_zip = dir_zip
-        self.dir_csv = dir_csv
-        self.dir_out = dir_out
-        self.dir_summary = dir_summary
+        self.paths = paths
 
     def agg_by_hour(self, df, orient="start", station=None) -> pd.DataFrame:
         """Given a df, aggregate the count of all rides in each hour for every station.
@@ -90,8 +79,20 @@ class Summarizer:
         )
         return stations_per_nta
 
-    # Given df of rides with NTA's joined, count the number of rides and rank them within each group.
-    def rank_stations_by_nta(df, df_stations_per_nta):
+    def rank_stations_by_nta(
+        df: pd.DataFrame, df_stations_per_nta: pd.DataFrame
+    ) -> pd.DataFrame:
+        """Given df of rides with NTA's joined,
+         count the number of rides and rank them within each group.
+
+        Args:
+            df (pd.DataFrame): [description] DataFrame of rides with NTA's joined
+            df_stations_per_nta (pd.DataFrame): [description] DataFrame of NTA's with station counts
+
+        Returns:
+            pd.DataFrame: [description]
+        """
+
         stations_ranked_by_nta = (
             df[["uuid", "ntacode", "start_station_id"]]
             .groupby(["ntacode", "start_station_id"])
@@ -136,7 +137,7 @@ class Summarizer:
         Args:
             df ([type]): [description]
         """
-        output = self.dir_summary / "./aggs_by_hour.json"
+        output = self.paths.summary / "./aggs_by_hour.json"
         by_hour_summary = (
             df.reset_index()
             .groupby(["start_station_id", "start_hour"])
@@ -151,7 +152,7 @@ class Summarizer:
         )
         logging.info(f"Outputting to {output}")
         # Problem: Create the file if it ∂oesn't exist
-        if not self.dir_summary.exists:
-            self.dir_summary.mkdir()
+        if not self.paths.summary.exists:
+            self.paths.summary.mkdir()
         with open(output, "w+") as outfile:
             json.dump(by_hour_summary, outfile)

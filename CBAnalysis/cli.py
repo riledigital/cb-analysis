@@ -1,11 +1,13 @@
+from pathlib import Path
 import click
 import logging
-import CBAnalysis
+from .main import Main
 
 
 @click.command()
 def run():
-    CBAnalysis(start_dir="temp")
+    main = Main(start_dir=Path("temp"))
+    main.run()
 
 
 if __name__ == "__main__":

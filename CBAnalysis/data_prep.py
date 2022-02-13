@@ -26,7 +26,7 @@ class Prepper:
     URL_STATION_FEED = "https://gbfs.citibikenyc.com/gbfs/en/station_information.json"
     URL_NYCNTAS_JSON = "https://data.cityofnewyork.us/api/geospatial/d3qk-pfyz?method=export&format=GeoJSON"
 
-    def __init__(self, dir_cwd, dir_zip, dir_csv, dir_out):
+    def __init__(self, paths):
         """Initialize a CBAnalysis instance with the cwd
 
         Args:
@@ -35,10 +35,7 @@ class Prepper:
         Returns:
             [type]: [description]
         """
-        self.dir_cwd = dir_cwd
-        self.dir_zip = dir_zip
-        self.dir_csv = dir_csv
-        self.dir_out = dir_out
+        self.paths = paths
 
     def download_ride_zip(self, output=Path("csv/"), year=2020, month=8, use_jc=False):
         """Downloads ZIP files and unzips them to output
@@ -61,7 +58,7 @@ class Prepper:
             )
 
         filename = make_url(year, month)
-        zipfile_path = self.dir_zip / Path(filename)
+        zipfile_path = self.paths.zip / Path(filename)
         if zipfile_path.exists():
             logging.warn("Already downloaded some zips... skipping early.")
             return None
@@ -69,7 +66,7 @@ class Prepper:
         logging.info(f"Downloading zip: {base + filename}")
         resp = requests.get(base + filename, stream=True)
         total_size_in_bytes = int(resp.headers.get("content-length", 0))
-        path_zipfile = self.dir_zip / Path(filename)
+        path_zipfile = self.paths.zip / Path(filename)
         block_size = 128  # 1 Kibibyte
         progress_bar = tqdm(total=total_size_in_bytes, unit="iB", unit_scale=True)
         with open(path_zipfile, "wb") as fd:
@@ -80,9 +77,9 @@ class Prepper:
         if total_size_in_bytes != 0 and progress_bar.n != total_size_in_bytes:
             print("ERROR, something went wrong")
 
-        logging.info(f"Extract csv: {self.dir_csv}/{base + filename}")
+        logging.info(f"Extract csv: {self.paths.csv}/{base + filename}")
         zf = zipfile.ZipFile(path_zipfile)
-        zf.extractall(self.dir_csv)
+        zf.extractall(self.paths.csv)
 
     def concat_csvs(self, glob_string="csv/*.csv", output="merged", save_temp=True):
         """glob csvs and merge them, assuming same columns"""
@@ -171,7 +168,9 @@ class Prepper:
         ]
         stations_geo = stations_geo[cols_to_keep]
         if save_temp:
-            stations_geo.to_pickle(Path(self.dir_cwd.name) / "stations_original.pickle")
+            stations_geo.to_pickle(
+                Path(self.paths.cwd.name) / "stations_original.pickle"
+            )
         return stations_geo
 
     def load_ntas(self, remote_url=URL_NYCNTAS_JSON, save_temp=True):
@@ -219,7 +218,7 @@ class Prepper:
         ]
         # projected = gdf.to_crs(epsg=4326)
         projected = gdf.copy()
-        output = Path(self.dir_out) / "stations-with-nta.geojson"
+        output = Path(self.paths.out) / "stations-with-nta.geojson"
         logging.info(f"Saving stations with NTAs: {output}")
         projected.to_file(output, driver="GeoJSON")
         if save_temp:

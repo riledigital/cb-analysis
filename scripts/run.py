@@ -10,4 +10,5 @@ print(sys.path)
 
 from cbanalysis.main import Main
 
-Main()
+main = Main(start_dir=Path("temp"))
+main.run()
