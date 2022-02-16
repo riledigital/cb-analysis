@@ -1,4 +1,5 @@
 import os
+from datetime import date, timedelta
 import logging
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -57,3 +58,13 @@ class WorkingPaths:
         for dir in self.paths.values():
             logging.debug(f"Created {dir}")
             touchdir(dir)
+
+
+def get_months(start_date=date(2020, 8, 1), end_date=date(2020, 12, 1)):
+    delta = end_date - start_date  # returns timedelta
+    months = []
+    for i in range(delta.months + 1):
+        month = start_date + timedelta(months=1)
+        print(month)
+        months.append(month)
+    return months

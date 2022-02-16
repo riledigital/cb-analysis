@@ -19,14 +19,19 @@ class Main:
         self.summarizer = Summarizer(self.paths)
 
     def run(self):
-        # logging.info("Downloading ZIPs from Citi Bike")
-        # self.dp.download_ride_zip()
+        fetched = self.fetch()
+        summarized = self.summarize(fetched["stations", fetched["rides"]])
+        self.export(summarized["hourly"], fetched["stations"], summarized["ranking"])
+
+    def fetch(self):
+        logging.info("Downloading ZIPs from Citi Bike")
+        self.dp.download_ride_zip()
 
         logging.info("Fetching station info...")
         stations = self.dp.fetch_station_info()
 
         logging.info("Combining CSVs...")
-        self.dp.concat_csvs()
+        all_months = self.dp.concat_csvs()
 
         logging.info("Preparing data...")
         df_rides = self.dp.load_rename_rides()
@@ -35,6 +40,9 @@ class Main:
         ntas = self.dp.load_ntas()
 
         df_station_geo = self.dp.sjoin_ntas_stations(ntas, stations)
+        return {"ntas": ntas, "rides": df_rides, "stations": df_station_geo}
+
+    def summarize(self, df_station_geo, df_rides):
         df_stations_per_nta = self.summarizer.count_stations_per_nta(df_station_geo)
 
         logging.info("Aggregating ride data...")
@@ -47,7 +55,9 @@ class Main:
         df_rankings = self.summarizer.rank_stations_by_nta(
             df_rides, df_stations_per_nta
         )
+        return {"hourly": df_hourly, "ranking": df_rankings}
 
+    def export(self, df_hourly, df_station_geo, df_rankings):
         logging.info("Compiling report...")
         json_report = make_report(df_hourly, df_station_geo, df_rankings)
 
