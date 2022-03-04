@@ -15,3 +15,7 @@ This project uses [Poetry](https://python-poetry.org/docs/basic-usage/#installin
 ## Makefile
 
 See the `Makefile` for tasks to run.
+
+## Dev environment warning
+
+Due to system-level dependencies and general Poetry + pandas + scipy weirdness, it's safest to install dependencies for now through conda. `conda env create -f environment.yml`

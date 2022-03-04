@@ -1,0 +1,20 @@
+name: cbanalysis
+channels:
+  - conda-forge
+dependencies:
+  - python=3.8
+  - numpy
+  - pandas
+  - Shapely
+  - Rtree
+  - pyjanitor
+  - click
+  - tqdm
+  - requests
+  - Fiona
+  - pylint
+  - pytest
+  - black
+  - pip:
+    - Janitor
+    - pyclean
