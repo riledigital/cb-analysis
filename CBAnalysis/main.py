@@ -1,6 +1,7 @@
 __version__ = "0.1.0"
 import logging
 import os
+import pickle
 
 from .data_prep import Prepper
 from .summarize import Summarizer
@@ -62,15 +63,24 @@ class Main:
 
     def export(self, df_hourly, df_station_geo, df_rankings):
         logging.info("Compiling report...")
-        json_report = make_report(
-            df_hourly.to_json(),
-            df_station_geo.to_json(),
-            df_rankings.to_json(),
-        )
 
-        path_report = self.paths.out / "report.json"
-        logging.info(f"Saving report to: {path_report}")
-        export_json(json_report, path_report)
+        report = {
+            "df_hourly": df_hourly,
+            "df_station_geo": df_station_geo,
+            "df_rankings": df_rankings,
+        }
+        with open("report.pickle", "wb") as handle:
+            pickle.dump(report, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+        # json_report = make_report(
+        #     df_hourly.to_json(),
+        #     df_station_geo.to_json(),
+        #     df_rankings.to_json(),
+        # )
+
+        # path_report = self.paths.out / "report.json"
+        # logging.info(f"Saving report to: {path_report}")
+        # export_json(json_report, path_report)
 
 
 if __name__ == "__main__":
