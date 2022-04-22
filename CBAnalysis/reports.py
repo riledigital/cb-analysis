@@ -11,9 +11,9 @@ def make_report(df_station_geo, df_hourly, df_station_ranking):
 
     report = dict(
         {
-            "geo": None,
-            "hourly_breakdown": None,
-            "ranking": None,
+            "geo": df_station_geo,
+            "hourly_breakdown": df_hourly,
+            "ranking": df_station_ranking,
         }
     )
     return report

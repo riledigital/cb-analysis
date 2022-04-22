@@ -62,7 +62,11 @@ class Main:
 
     def export(self, df_hourly, df_station_geo, df_rankings):
         logging.info("Compiling report...")
-        json_report = make_report(df_hourly, df_station_geo, df_rankings)
+        json_report = make_report(
+            df_hourly.to_json(),
+            df_station_geo.to_json(),
+            df_rankings.to_json(),
+        )
 
         path_report = self.paths.out / "report.json"
         logging.info(f"Saving report to: {path_report}")

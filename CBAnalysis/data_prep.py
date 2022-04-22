@@ -168,9 +168,7 @@ class Prepper:
         ]
         stations_geo = stations_geo[cols_to_keep]
         if save_temp:
-            stations_geo.to_pickle(
-                Path(self.paths.start_cwd.name) / "stations_original.pickle"
-            )
+            stations_geo.to_pickle("stations_original.pickle")
         return stations_geo
 
     def load_ntas(self, remote_url=URL_NYCNTAS_JSON, save_temp=True):

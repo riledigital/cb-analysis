@@ -20,6 +20,7 @@ class WorkingPaths:
         self.start_cwd = None
         self.tempdir = None
         self.paths = self.make_folders(start_dir)
+
         if touch:
             logging.debug("Touch-ing folders...")
             self.touch()
@@ -35,16 +36,17 @@ class WorkingPaths:
         """
         Create folders for project.
         """
+        logging.debug(f"CWD IS {os.getcwd()}")
         if start_dir:
             logging.debug(f"Using existing directory: {start_dir}")
             self.start_cwd = start_dir
+            os.chdir(self.start_cwd)
         else:
             self.tempdir = TemporaryDirectory()
             logging.debug(f"Using TemporaryDirectory: {start_dir}")
             self.start_cwd = self.tempdir.name
             os.chdir(self.tempdir.name)
 
-        logging.debug(f"CWD IS {os.getcwd()}")
         logging.debug(f"CWD changed to {os.getcwd()}")
         paths = {x: Path(x) for x in ["zip", "csv", "out", "summary"]}
         # paths = {
