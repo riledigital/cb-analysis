@@ -60,7 +60,7 @@ class Summarizer:
             idx = pd.IndexSlice
             return by_hr.loc[idx[station, :, :]]
 
-    def count_stations_per_nta(df: pd.DataFrame) -> pd.DataFrame:
+    def count_stations_per_nta(self, df: pd.DataFrame) -> pd.DataFrame:
         """Given a df of rides with NTAs identified, count # of stations per NTA.
 
         Args:
@@ -69,18 +69,22 @@ class Summarizer:
         Returns:
             pd.DataFrame: [description] DataFrame
         """
+        # Use station_id since we're only using station info, not rides
         stations_per_nta = (
-            df[["ntacode", "start_station_id"]]
-            .groupby("ntacode")[["start_station_id"]]
+            df[["ntacode", "station_id"]]
+            .groupby("ntacode")[["station_id"]]
             .nunique()
             .reset_index()
             .set_index("ntacode")
-            .rename({"start_station_id": "stations_count"}, axis=1)
+            .rename({"station_id": "stations_count"}, axis=1)
         )
         return stations_per_nta
 
     def rank_stations_by_nta(
-        df: pd.DataFrame, df_stations_per_nta: pd.DataFrame
+        self,
+        df_rides: pd.DataFrame,
+        df_station_geo: pd.DataFrame,
+        df_stations_per_nta: pd.DataFrame,
     ) -> pd.DataFrame:
         """Given df of rides with NTA's joined,
          count the number of rides and rank them within each group.
@@ -93,8 +97,18 @@ class Summarizer:
             pd.DataFrame: [description]
         """
 
+        # join the geo data onto rides
+        df_rides = df_rides.astype({"start_station_id": str})
+
+        df_joined = df_rides.merge(
+            df_station_geo,
+            how="left",
+            left_on="start_station_id",
+            right_on="station_id",
+        )
+
         stations_ranked_by_nta = (
-            df[["uuid", "ntacode", "start_station_id"]]
+            df_joined[["uuid", "ntacode", "start_station_id"]]
             .groupby(["ntacode", "start_station_id"])
             .count()
             .sort_values(by=["ntacode", "uuid"], ascending=False)

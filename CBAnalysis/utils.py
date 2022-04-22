@@ -17,6 +17,8 @@ class WorkingPaths:
     """A dictionary of working paths, with the option of creating a TemporaryDirectory."""
 
     def __init__(self, start_dir, touch=True) -> None:
+        self.start_cwd = None
+        self.tempdir = None
         self.paths = self.make_folders(start_dir)
         if touch:
             logging.debug("Touch-ing folders...")

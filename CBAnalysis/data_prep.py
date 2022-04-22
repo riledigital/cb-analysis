@@ -121,7 +121,7 @@ class Prepper:
             df[f"{orientation}_weekday"] = df[f"{orientation}time"].dt.dayofweek
             return df
 
-        if Path(prepped_rides).exists():
+        if Path(self.paths.start_cwd / Path(prepped_rides)).exists():
             logging.info(f"Merged rides already exists; loading existing...")
             df = pd.read_pickle(prepped_rides)
         else:
@@ -169,7 +169,7 @@ class Prepper:
         stations_geo = stations_geo[cols_to_keep]
         if save_temp:
             stations_geo.to_pickle(
-                Path(self.paths.cwd.name) / "stations_original.pickle"
+                Path(self.paths.start_cwd.name) / "stations_original.pickle"
             )
         return stations_geo
 

@@ -19,8 +19,11 @@ class Main:
         self.summarizer = Summarizer(self.paths)
 
     def run(self):
+        # Downlaod data
         fetched = self.fetch()
-        summarized = self.summarize(fetched["stations", fetched["rides"]])
+        # Process summaries
+        summarized = self.summarize(fetched["stations"], fetched["rides"])
+        # Export
         self.export(summarized["hourly"], fetched["stations"], summarized["ranking"])
 
     def fetch(self):
@@ -53,7 +56,7 @@ class Main:
         # compute rankings
         logging.info("Computing rankings...")
         df_rankings = self.summarizer.rank_stations_by_nta(
-            df_rides, df_stations_per_nta
+            df_rides, df_station_geo, df_stations_per_nta
         )
         return {"hourly": df_hourly, "ranking": df_rankings}
 
@@ -61,7 +64,7 @@ class Main:
         logging.info("Compiling report...")
         json_report = make_report(df_hourly, df_station_geo, df_rankings)
 
-        path_report = self.paths["out"] / "report.json"
+        path_report = self.paths.out / "report.json"
         logging.info(f"Saving report to: {path_report}")
         export_json(json_report, path_report)
 
