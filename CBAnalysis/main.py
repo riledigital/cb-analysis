@@ -48,11 +48,11 @@ class Main:
             return months
         for target in months_in_range(start_date, end_date):
             logging.info(f"Fetching: {target.year}, {target.month}")
-            # self.dp.download_ride_zip(year=target.year, month=target.month, use_jc=False)
+            self.dp.download_ride_zip(year=target.year, month=target.month, use_jc=False)
 
 
-        # logging.info("Combining CSVs...")
-        # all_months = self.dp.concat_csvs()
+        logging.info("Combining CSVs...")
+        all_months = self.dp.concat_csvs()
 
         logging.info("Preparing data...")
         df_rides = self.dp.load_rename_rides()
@@ -92,6 +92,8 @@ class Main:
         with open("report.pickle", "wb") as handle:
             pickle.dump(report, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
+        # TODO: Export JSON files for each type of data to be loaded into web client
+        
         # json_report = make_report(
         #     df_hourly.to_json(),
         #     df_station_geo.to_json(),
