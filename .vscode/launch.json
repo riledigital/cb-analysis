@@ -8,7 +8,7 @@
       "name": "Python: Script",
       "type": "python",
       "request": "launch",
-      "program": "${workspaceFolder}/scripts/run.py",
+      "program": "${workspaceFolder}/cbanalysis/cli.py",
       "console": "integratedTerminal"
     },
     {

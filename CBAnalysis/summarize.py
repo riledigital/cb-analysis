@@ -36,8 +36,8 @@ class Summarizer:
         """
         # first, resample to every hour, counting all of the trips per hour
         df1 = (
-            df[[f"{orient}time", f"{orient}_station_id"]]
-            .set_index(f"{orient}time", drop=True)
+            df[[f"{orient}_time", f"{orient}_station_id"]]
+            .set_index(f"{orient}_time", drop=True)
             .groupby(f"{orient}_station_id")
             .resample("1H")
             .count()
@@ -45,8 +45,8 @@ class Summarizer:
             .reset_index()
         )
         # Get time fields for grouping
-        df1[f"{orient}_weekday"] = df1[f"{orient}time"].dt.weekday
-        df1[f"{orient}_hour"] = df1[f"{orient}time"].dt.hour
+        df1[f"{orient}_weekday"] = df1[f"{orient}_time"].dt.weekday
+        df1[f"{orient}_hour"] = df1[f"{orient}_time"].dt.hour
         # Now we aggregate, and get the count per hour and per weekday
         by_hr = df1.groupby(
             [f"{orient}_station_id", f"{orient}_weekday", f"{orient}_hour"]

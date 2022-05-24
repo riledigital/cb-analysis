@@ -82,7 +82,9 @@ class Prepper:
         zf.extractall(self.paths.csv)
 
     def concat_csvs(self, glob_string="csv/*.csv", output="merged", save_temp=True):
-        """glob csvs and merge them, assuming same columns"""
+        """glob csvs and merge them, assuming same columns
+        -- note that schema changed in 2021
+        """
         logging.info(f"Concatenating CSVs in {glob_string}...")
         if len(glob.glob(glob_string)) < 1:
             raise Exception("No CSVs to concatenate.")
@@ -90,7 +92,7 @@ class Prepper:
             logging.info("CSVs not already found, creating directory")
             os.makedirs("csv")
         dfs = map(
-            lambda f: pd.read_csv(f, parse_dates=["starttime", "stoptime"]),
+            lambda f: pd.read_csv(f, parse_dates=["started_at", "ended_at"]),
             glob.glob(glob_string),
         )
         all_months = pd.concat(dfs)
@@ -116,9 +118,9 @@ class Prepper:
 
         def create_date_columns(df, orientation="start"):
             df = df.copy()
-            df[f"{orientation}_hour"] = df[f"{orientation}time"].dt.hour
-            df[f"{orientation}_day"] = df[f"{orientation}time"].dt.day
-            df[f"{orientation}_weekday"] = df[f"{orientation}time"].dt.dayofweek
+            df[f"{orientation}_hour"] = df[f"{orientation}_time"].dt.hour
+            df[f"{orientation}_day"] = df[f"{orientation}_time"].dt.day
+            df[f"{orientation}_weekday"] = df[f"{orientation}_time"].dt.dayofweek
             return df
 
         if Path(self.paths.start_cwd / Path(prepped_rides)).exists():
@@ -126,12 +128,12 @@ class Prepper:
             df = pd.read_pickle(prepped_rides)
         else:
             df = pd.read_pickle(input_merged_rides)
-            df = create_date_columns(df, orientation="start")
-            df = create_date_columns(df, orientation="stop")
-            df = df.replace({0: "unknown", 1: "male", 2: "female"}).clean_names()
-
+            
             df.rename(
+                # FROM : TO
                 {
+                    "started_at":"start_time",
+                    "ended_at":"stop_time",
                     "end_station_id": "stop_station_id",
                     "end_station_name": "stop_station_name",
                     "end_station_latitude": "stop_station_latitude",
@@ -140,6 +142,10 @@ class Prepper:
                 axis=1,
                 inplace=True,
             )
+            
+            df = create_date_columns(df, orientation="start")
+            df = create_date_columns(df, orientation="stop")
+            df = df.replace({0: "unknown", 1: "male", 2: "female"}).clean_names()
             if save_temp:
                 df.to_pickle(prepped_rides)
         return df

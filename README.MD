@@ -4,18 +4,13 @@ These scripts are used to automatically download and create summary files for th
 
 # Installation
 
-This project uses [Poetry](https://python-poetry.org/docs/basic-usage/#installing-dependencies) for dependencies and package management.
+## Dev environment warning
 
-- Use `pyenv` to install and switch to Python 3.8.12
-- Note: `rtree` or `geopandas` might fail without `libspatialindex` installed. Use a system package manager to install. `brew install spatialindex`.
-- Run `poetry install` to create a virtualenv + install dependencies.
-- Set VSCode Python environment to the output of `poetry env info` under Virtualenv path to enable VSCode debugger.
-- Tests run with `pytest`
-
+Due to system-level dependencies and general Poetry + pandas + scipy weirdness, it's safest to install dependencies for now through conda. `conda env create -f environment.yml` 
+- Fill parameters in `.env` file, copy from `.env.sample`
+- `conda activate cbanalysis`
+- `python3 ./cbanalysis/cli.py`
 ## Makefile
 
 See the `Makefile` for tasks to run.
 
-## Dev environment warning
-
-Due to system-level dependencies and general Poetry + pandas + scipy weirdness, it's safest to install dependencies for now through conda. `conda env create -f environment.yml`

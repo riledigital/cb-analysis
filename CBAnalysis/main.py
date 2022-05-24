@@ -48,13 +48,11 @@ class Main:
             return months
         for target in months_in_range(start_date, end_date):
             logging.info(f"Fetching: {target.year}, {target.month}")
-            self.dp.download_ride_zip(year=target.year, month=target.month, use_jc=False)
+            # self.dp.download_ride_zip(year=target.year, month=target.month, use_jc=False)
 
-        logging.info("Fetching station info...")
-        stations = self.dp.fetch_station_info()
 
-        logging.info("Combining CSVs...")
-        all_months = self.dp.concat_csvs()
+        # logging.info("Combining CSVs...")
+        # all_months = self.dp.concat_csvs()
 
         logging.info("Preparing data...")
         df_rides = self.dp.load_rename_rides()
@@ -62,6 +60,9 @@ class Main:
         logging.info("Loading NTAs...")
         ntas = self.dp.load_ntas()
 
+        logging.info("Fetching station info...")
+        stations = self.dp.fetch_station_info()
+        
         df_station_geo = self.dp.sjoin_ntas_stations(ntas, stations)
         return {"ntas": ntas, "rides": df_rides, "stations": df_station_geo}
 
