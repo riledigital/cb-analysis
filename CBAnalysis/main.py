@@ -1,12 +1,14 @@
 __version__ = "0.1.0"
+from datetime import date, timedelta
+from time import strptime
 import logging
 import os
 import pickle
 
-from .data_prep import Prepper
-from .summarize import Summarizer
-from .utils import WorkingPaths
-from .reports import make_report, export_json
+from data_prep import Prepper
+from summarize import Summarizer
+from utils import WorkingPaths
+from reports import make_report, export_json
 
 from pathlib import Path
 
@@ -19,17 +21,34 @@ class Main:
         self.dp = Prepper(self.paths)
         self.summarizer = Summarizer(self.paths)
 
-    def run(self):
+    def run(self, start_date, end_date):
         # Downlaod data
-        fetched = self.fetch()
+        fetched = self.fetch(start_date, end_date)
         # Process summaries
         summarized = self.summarize(fetched["stations"], fetched["rides"])
         # Export
         self.export(summarized["hourly"], fetched["stations"], summarized["ranking"])
 
-    def fetch(self):
-        logging.info("Downloading ZIPs from Citi Bike")
-        self.dp.download_ride_zip()
+    def fetch(self, start_date, end_date):
+        logging.info(f"Downloading ZIPs from Citi Bike from {start_date} to {end_date}")
+        
+        # download for range
+        # months_in_range("2021-12-01", "2022-05-01")
+        def months_in_range(start, end):
+            start = date.fromisoformat(start)
+            end = date.fromisoformat(end)
+            months = list()
+            current = start
+            while (current <= end):
+                months.append(current)
+                if (current.month == 12):
+                    current = current.replace(year = current.year + 1, month = 1)
+                else:
+                    current = current.replace(month = current.month + 1)
+            return months
+        for target in months_in_range(start_date, end_date):
+            logging.info(f"Fetching: {target.year}, {target.month}")
+            self.dp.download_ride_zip(year=target.year, month=target.month, use_jc=False)
 
         logging.info("Fetching station info...")
         stations = self.dp.fetch_station_info()

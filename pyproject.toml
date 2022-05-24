@@ -5,7 +5,7 @@ description = "Analysis module for Citi Bike Planner app"
 authors = ["Ri Le <r.le@columbia.edu>"]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.10"
 Shapely = "^1.7.1"
 Fiona = "^1.8.17"
 Rtree = "^0.9.4"
