@@ -35,25 +35,31 @@ class Summarizer:
             [type]: DataFrame
         """
         # first, resample to every hour, counting all of the trips per hour
-        df1 = (
-            df[[f"{orient}_time", f"{orient}_station_id"]]
+        df1: pd.DataFrame = (
+            df.loc[:, [f"{orient}_time", f"{orient}_short_name"]]
             .set_index(f"{orient}_time", drop=True)
-            .groupby(f"{orient}_station_id")
+            .groupby(f"{orient}_short_name")
             .resample("1H")
             .count()
-            .rename(columns={f"{orient}_station_id": "counts"})
+            .rename(columns={f"{orient}_short_name": "counts"})
             .reset_index()
         )
         # Get time fields for grouping
         df1[f"{orient}_weekday"] = df1[f"{orient}_time"].dt.weekday
         df1[f"{orient}_hour"] = df1[f"{orient}_time"].dt.hour
         # Now we aggregate, and get the count per hour and per weekday
-        by_hr = df1.groupby(
-            [f"{orient}_station_id", f"{orient}_weekday", f"{orient}_hour"]
-        ).agg([np.sum])
-        by_hr.columns = by_hr.columns.droplevel(0)
-        # by_hr.columns = ['start_station_id', 'start_weekday', 'start_hour', 'ride_sum', 'ride_mean']
-        # by_hr.to_json('byhr.json', orient="records")
+        # by_weekday_hr = df1.groupby(
+        #     [f"{orient}_short_name", f"{orient}_weekday", f"{orient}_hour"]
+        # ).aggregate(np.sum)
+        # by_weekday_hr.columns = by_weekday_hr.columns.droplevel(0)
+
+        by_hr = (
+            df1.groupby([f"{orient}_short_name", f"{orient}_hour"])
+            .aggregate(np.sum)
+            .reset_index()
+        )
+
+        by_hr = by_hr.loc[:, ["start_short_name", "start_hour", "counts"]]
         if station == None:
             return by_hr
         else:
@@ -154,13 +160,13 @@ class Summarizer:
         output = self.paths.summary / "./aggs_by_hour.json"
         by_hour_summary = (
             df.reset_index()
-            .groupby(["start_station_id", "start_hour"])
+            .groupby(["start_short_name", "start_hour"])
             .mean()
-            .drop("start_weekday", axis=1)
+            # .drop("start_weekday", axis=1)
             .rename({"sum": "mean_rides"}, axis=1)
             .reset_index()
             .round(1)
-            .groupby("start_station_id")
+            .groupby("start_short_name")
             .apply(lambda x: x.to_dict(orient="records"))
             .to_dict()
         )

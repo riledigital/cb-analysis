@@ -4,12 +4,17 @@
   "python.testing.nosetestsEnabled": false,
   "python.testing.pytestEnabled": true,
   "editor.defaultFormatter": "ms-python.python",
-  "editor.formatOnPaste": true,
+  "editor.formatOnPaste": false,
   "editor.formatOnSave": true,
   "python.formatting.provider": "black",
-
   "[ignore]": {
     "editor.defaultFormatter": "foxundermoon.shell-format"
   },
-  "python.terminal.activateEnvInCurrentTerminal": true
+  "python.terminal.activateEnvInCurrentTerminal": true,
+  "[python]": {
+    "editor.formatOnPaste": false,
+    "editor.formatOnSaveMode": "file"
+  },
+  "python.formatting.blackPath": "/Users/rile/miniconda3/envs/cbanalysis/bin/black",
+  "python.linting.enabled": true
 }

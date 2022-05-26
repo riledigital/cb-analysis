@@ -72,3 +72,4 @@ def get_months(start_date=date(2020, 8, 1), end_date=date(2020, 12, 1)):
         print(month)
         months.append(month)
     return months
+

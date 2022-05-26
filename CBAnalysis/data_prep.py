@@ -81,7 +81,7 @@ class Prepper:
         zf = zipfile.ZipFile(path_zipfile)
         zf.extractall(self.paths.csv)
 
-    def concat_csvs(self, glob_string="csv/*.csv", output="merged", save_temp=True):
+    def concat_csvs(self, glob_string="csv/*.csv", output="merged", save_temp=False):
         """glob csvs and merge them, assuming same columns
         -- note that schema changed in 2021
         """
@@ -106,7 +106,7 @@ class Prepper:
         self,
         input_merged_rides="./merged.pickle",
         prepped_rides="./merged_prepped.pickle",
-        save_temp=True,
+        save_temp=False,
     ):
         """Loads concatted rides ride files
 
@@ -128,12 +128,12 @@ class Prepper:
             df = pd.read_pickle(prepped_rides)
         else:
             df = pd.read_pickle(input_merged_rides)
-            
+
             df.rename(
                 # FROM : TO
                 {
-                    "started_at":"start_time",
-                    "ended_at":"stop_time",
+                    "started_at": "start_time",
+                    "ended_at": "stop_time",
                     "end_station_id": "stop_station_id",
                     "end_station_name": "stop_station_name",
                     "end_station_latitude": "stop_station_latitude",
@@ -142,7 +142,7 @@ class Prepper:
                 axis=1,
                 inplace=True,
             )
-            
+
             df = create_date_columns(df, orientation="start")
             df = create_date_columns(df, orientation="stop")
             df = df.replace({0: "unknown", 1: "male", 2: "female"}).clean_names()
@@ -168,11 +168,12 @@ class Prepper:
         cols_to_keep = [
             "name",
             "legacy_id",
-            "station_id",
             "geometry",
+            "station_id",
             "short_name",
         ]
-        stations_geo = stations_geo[cols_to_keep]
+        stations_geo: pd.DataFrame = stations_geo[cols_to_keep]
+
         if save_temp:
             stations_geo.to_pickle("stations_original.pickle")
         return stations_geo
@@ -211,8 +212,8 @@ class Prepper:
         gdf = gpd.sjoin(stations, ntas, op="intersects", how="left").loc[
             :,
             [
-                "short_name",
                 "station_id",
+                "short_name",
                 "name",
                 "boroname",
                 "ntaname",
