@@ -14,3 +14,6 @@ Due to system-level dependencies and general Poetry + pandas + scipy weirdness, 
 
 See the `Makefile` for tasks to run.
 
+## Environment Variables
+
+Use env variables to configure the scripts. See `.env.sample` 

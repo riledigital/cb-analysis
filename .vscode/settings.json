@@ -16,5 +16,8 @@
     "editor.formatOnSaveMode": "file"
   },
   "python.formatting.blackPath": "/Users/rile/miniconda3/envs/cbanalysis/bin/black",
-  "python.linting.enabled": true
+  "python.linting.enabled": true,
+  "[dotenv]": {
+    "editor.defaultFormatter": "foxundermoon.shell-format"
+  }
 }
