@@ -81,7 +81,7 @@ class Prepper:
         zf = zipfile.ZipFile(path_zipfile)
         zf.extractall(self.paths.csv)
 
-    def concat_csvs(self, glob_string="csv/*.csv", output="merged", save_temp=False):
+    def concat_csvs(self, glob_string="csv/*.csv", output="merged", save_temp=True):
         """glob csvs and merge them, assuming same columns
         -- note that schema changed in 2021
         """
