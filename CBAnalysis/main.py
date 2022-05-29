@@ -198,7 +198,6 @@ class Main:
         # export_json(json_report, path_report)
         # export_msgpack(json_report, path_report)
         if os.getenv("SQLALCHEMY_CONN") is not None:
-            logging.info(df_hourly.info())
             export_hourly_sql(df_hourly)
 
 

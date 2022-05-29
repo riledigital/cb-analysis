@@ -8,6 +8,7 @@ import json
 import numpy as np
 import logging
 
+
 logging.basicConfig(level=logging.INFO)
 
 
@@ -57,7 +58,7 @@ class Summarizer:
             df1.groupby([f"{orient}_short_name", f"{orient}_hour"])
             .aggregate(np.sum)
             .reset_index()
-            .rename({f"{orient}_short_name": "short_name"})
+            .rename(columns={f"{orient}_short_name": "short_name"})
         )
 
         by_hr = by_hr.loc[:, ["short_name", "start_hour", "counts"]]

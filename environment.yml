@@ -194,5 +194,6 @@ dependencies:
     - werkzeug==2.1.2
     - wsgi-oauth2==0.2.2
     - zope-event==4.5.0
+    - psycopg2
     - zope-interface==5.4.0
 prefix: /Users/rile/miniconda3/envs/cbanalysis

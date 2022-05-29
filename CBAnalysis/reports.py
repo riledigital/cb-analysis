@@ -9,8 +9,9 @@ from pathlib import Path
 import pandas as pd
 from sqlalchemy import create_engine
 
-if os.getenv("SQLALCHEMY_CONN"):
-    engine = create_engine(os.getenv("SQLALCHEMY_CONN"))
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 def load_pickle():
@@ -63,14 +64,18 @@ def export_groups_by_stations(df) -> dict:
         dict: _description_
     """
     grouped: dict = dict()
-    for station_id, data in df.groupby("start_short_name"):
-        logging.info(f"Exporting station: {station_id}")
+    for station_id, data in df.groupby("short_name"):
+        # logging.info(f"Exporting station: {station_id}")
         grouped[station_id] = data.to_dict(orient="records")
     return grouped
 
 
 def export_hourly_sql(df: pd.DataFrame) -> None or int:
-    logging.info(f"Exporting to SQL database...")
+    logging.info(os.getenv("SQLALCHEMY_CONN"))
+    engine = create_engine(os.getenv("SQLALCHEMY_CONN"))
+    logging.info(
+        f"Exporting to SQL database using connection string: SQLALCHEMY_CONN..."
+    )
     with engine.connect() as connection:
         result = df.to_sql(
             name="summary_hourly",
