@@ -57,17 +57,18 @@ class Summarizer:
             df1.groupby([f"{orient}_short_name", f"{orient}_hour"])
             .aggregate(np.sum)
             .reset_index()
+            .rename({f"{orient}_short_name": "short_name"})
         )
 
-        by_hr = by_hr.loc[:, ["start_short_name", "start_hour", "counts"]]
+        by_hr = by_hr.loc[:, ["short_name", "start_hour", "counts"]]
         if station == None:
             return by_hr
         else:
             idx = pd.IndexSlice
             return by_hr.loc[idx[station, :, :]]
 
-    def count_stations_per_nta(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Given a df of rides with NTAs identified, count # of stations per NTA.
+    def count_stations_per_nta(self, df_stations: pd.DataFrame) -> pd.DataFrame:
+        """Given a df of stations with NTAs identified, count # of stations per NTA.
 
         Args:
             df ([type]): DataFrame of rides
@@ -77,7 +78,7 @@ class Summarizer:
         """
         # Use station_id since we're only using station info, not rides
         stations_per_nta = (
-            df[["ntacode", "station_id"]]
+            df_stations.loc[:, ["ntacode", "station_id"]]
             .groupby("ntacode")[["station_id"]]
             .nunique()
             .reset_index()
@@ -104,18 +105,19 @@ class Summarizer:
         """
 
         # join the geo data onto rides
-        df_rides = df_rides.astype({"start_station_id": str})
+        df_rides = df_rides.astype({"start_short_name": str})
 
-        df_joined = df_rides.merge(
-            df_station_geo,
+        df_joined = pd.merge(
+            left=df_rides,
+            right=df_station_geo,
             how="left",
-            left_on="start_station_id",
-            right_on="station_id",
+            left_on="start_short_name",
+            right_on="short_name",
         )
 
         stations_ranked_by_nta = (
-            df_joined[["uuid", "ntacode", "start_station_id"]]
-            .groupby(["ntacode", "start_station_id"])
+            df_joined.loc[:, ["uuid", "ntacode", "start_short_name"]]
+            .groupby(["ntacode", "start_short_name"])
             .count()
             .sort_values(by=["ntacode", "uuid"], ascending=False)
             .groupby(["ntacode"])
@@ -123,10 +125,36 @@ class Summarizer:
             .reset_index()
             .rename({"uuid": "station_rank"}, axis=1)
             .merge(df_stations_per_nta, on="ntacode", how="left")
-            .set_index("start_station_id")
+            # Cast type to int
+            .astype({"station_rank": "int32"})
+            .set_index("start_short_name")
+            .rename(columns={"start_short_name": "short_name"})
         )
 
         return stations_ranked_by_nta
+
+    def join_rankings(
+        self, df_station_geo: gpd.GeoDataFrame, df_rankings: pd.DataFrame
+    ) -> gpd.GeoDataFrame:
+        """Create a GeoDataFrame with ranking data in properties
+
+        Args:
+            df_stations (pd.DataFrame): _description_
+            df_ranks (pd.DataFrame): _description_
+            df_station_counts (pd.DataFrame): _description_
+        """
+
+        # Join the rankings onto the station_geo for mapbox
+        merged: gpd.GeoDataFrame = pd.merge(
+            left=df_station_geo,
+            right=df_rankings,
+            how="left",
+            left_on="short_name",
+            # right_on="short_name",
+            right_index=True,
+        )
+
+        return merged
 
     def compute_aggs_by_hour(self, df):
         """Given all rides, compute the average # of new started rides per hour

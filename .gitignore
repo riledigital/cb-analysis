@@ -145,3 +145,4 @@ test-output.xml
 
 # postgres data files
 pgdata
+.vscode/settings.json

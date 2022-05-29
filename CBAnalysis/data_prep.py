@@ -81,7 +81,7 @@ class Prepper:
         zf = zipfile.ZipFile(path_zipfile)
         zf.extractall(self.paths.csv)
 
-    def concat_csvs(self, glob_string="csv/*.csv", output="merged", save_temp=True):
+    def concat_csvs(self, glob_string="csv/*.csv", output="merged", save_temp=False):
         """glob csvs and merge them, assuming same columns
         -- note that schema changed in 2021
         """
@@ -97,14 +97,15 @@ class Prepper:
         )
         all_months = pd.concat(dfs)
         all_months["uuid"] = uuid.uuid1()
-        logging.info(f"Saving to {output}")
         if save_temp:
+            logging.info(f"Saving to {output}")
             all_months.to_pickle(path=f"{output}.pickle")
         return all_months
 
     def load_rename_rides(
         self,
-        input_merged_rides="./merged.pickle",
+        input_merged_rides: pd.DataFrame = None,
+        input_merged_rides_path="./merged.pickle",
         prepped_rides="./merged_prepped.pickle",
         save_temp=False,
     ):
@@ -123,34 +124,39 @@ class Prepper:
             df[f"{orientation}_weekday"] = df[f"{orientation}_time"].dt.dayofweek
             return df
 
-        if Path(self.paths.start_cwd / Path(prepped_rides)).exists():
-            logging.info(f"Merged rides already exists; loading existing...")
-            df = pd.read_pickle(prepped_rides)
-        else:
-            df = pd.read_pickle(input_merged_rides)
+        # Guard: load from disk if we are debugging
+        if input_merged_rides_path is None:
+            logging.info(f"Loading input_merged_rides_path...")
+            if Path(self.paths.start_cwd / Path(prepped_rides)).exists():
+                logging.info(f"Merged rides already exists; loading existing...")
+                df = pd.read_pickle(prepped_rides)
+            else:
+                df = pd.read_pickle(input_merged_rides_path)
 
-            df.rename(
-                # FROM : TO
-                {
-                    "started_at": "start_time",
-                    "ended_at": "stop_time",
-                    "end_station_id": "stop_station_id",
-                    "end_station_name": "stop_station_name",
-                    "end_station_latitude": "stop_station_latitude",
-                    "end_station_longitude": "stop_station_longitude",
-                },
-                axis=1,
-                inplace=True,
-            )
+        logging.info(f"Using in-memory input_merged_rides")
+        df = input_merged_rides
+        df.rename(
+            # FROM : TO
+            {
+                "started_at": "start_time",
+                "ended_at": "stop_time",
+                "end_station_id": "stop_station_id",
+                "end_station_name": "stop_station_name",
+                "end_station_latitude": "stop_station_latitude",
+                "end_station_longitude": "stop_station_longitude",
+            },
+            axis=1,
+            inplace=True,
+        )
 
-            df = create_date_columns(df, orientation="start")
-            df = create_date_columns(df, orientation="stop")
-            df = df.replace({0: "unknown", 1: "male", 2: "female"}).clean_names()
-            if save_temp:
-                df.to_pickle(prepped_rides)
+        df = create_date_columns(df, orientation="start")
+        df = create_date_columns(df, orientation="stop")
+        df = df.replace({0: "unknown", 1: "male", 2: "female"}).clean_names()
+        if save_temp:
+            df.to_pickle(prepped_rides)
         return df
 
-    def fetch_station_info(self, save_temp=True):
+    def fetch_station_info(self, save_temp=False):
         """Get data on all Citi Bike stations from the Citi Bike feed API
 
         Returns:
@@ -178,7 +184,7 @@ class Prepper:
             stations_geo.to_pickle("stations_original.pickle")
         return stations_geo
 
-    def load_ntas(self, remote_url=URL_NYCNTAS_JSON, save_temp=True):
+    def load_ntas(self, remote_url=URL_NYCNTAS_JSON, save_temp=False):
         """Loads and converts NTA data from NYC remote URL.
 
         Args:
@@ -198,7 +204,7 @@ class Prepper:
             ntas.to_file(Path("ntas_orig.geojson"), driver="GeoJSON")
         return ntas
 
-    def sjoin_ntas_stations(self, ntas, stations, save_temp=True):
+    def sjoin_ntas_stations(self, ntas, stations, save_temp=False):
         """Joins NTA context data to CB station locations.
 
         Args:
@@ -223,9 +229,9 @@ class Prepper:
         ]
         # projected = gdf.to_crs(epsg=4326)
         projected = gdf.copy()
-        output = Path(self.paths.out) / "stations-with-nta.geojson"
-        logging.info(f"Saving stations with NTAs: {output}")
-        projected.to_file(output, driver="GeoJSON")
         if save_temp:
+            output = Path(self.paths.out) / "stations-with-nta.geojson"
+            logging.info(f"Saving stations with NTAs: {output}")
+            projected.to_file(output, driver="GeoJSON")
             projected.to_pickle("./stations-with-nta.pickle")
         return projected

@@ -19,5 +19,17 @@
   "python.linting.enabled": true,
   "[dotenv]": {
     "editor.defaultFormatter": "foxundermoon.shell-format"
-  }
+  },
+  "sqltools.connections": [
+    {
+      "previewLimit": 50,
+      "server": "localhost",
+      "port": 5432,
+      "driver": "PostgreSQL",
+      "name": "cbanalysis",
+      "database": "postgres",
+      "username": "postgres",
+      "password": "password"
+    }
+  ]
 }

@@ -6,12 +6,12 @@ import os
 import pickle
 
 import pandas as pd
-from reports import export_msgpack, export_groups_by_stations
+from reports import export_hourly_sql, export_msgpack, export_groups_by_stations
 
 from data_prep import Prepper
 from summarize import Summarizer
 from utils import WorkingPaths
-from reports import make_report, export_json
+from reports import export_json
 
 from pathlib import Path
 
@@ -60,7 +60,7 @@ class Main:
         all_months = self.dp.concat_csvs()
 
         logging.info("Preparing data...")
-        df_rides = self.dp.load_rename_rides()
+        df_rides = self.dp.load_rename_rides(input_merged_rides=all_months)
 
         logging.info("Loading NTAs...")
         ntas = self.dp.load_ntas()
@@ -72,7 +72,6 @@ class Main:
         return {"ntas": ntas, "rides": df_rides, "stations": df_station_geo}
 
     def summarize(self, df_station_geo, df_rides):
-        df_stations_per_nta = self.summarizer.count_stations_per_nta(df_station_geo)
 
         logging.info("Aggregating ride data...")
         # In >2021, change id to short_name
@@ -147,10 +146,10 @@ class Main:
 
         df_hourly = self.summarizer.agg_by_hour(df_rides)
 
-        logging.info("Exporting report...")
-        self.summarizer.export_by_hour_json(df_hourly)
-
         # compute rankings
+        df_stations_per_nta: pd.DataFrame = self.summarizer.count_stations_per_nta(
+            df_station_geo
+        )
         logging.info("Computing rankings...")
         df_rankings = self.summarizer.rank_stations_by_nta(
             df_rides, df_station_geo, df_stations_per_nta
@@ -166,34 +165,41 @@ class Main:
             "df_rankings": df_rankings,
         }
 
-        # Save a pickle
-        with open("report.pickle", "wb") as handle:
-            pickle.dump(report, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        # # Save a pickle
+        # with open("report.pickle", "wb") as handle:
+        #     pickle.dump(report, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-        # TODO: Export JSON files for each type of data to be loaded into web client
+        # Join the rankings onto the station_geo for mapbox
+        df_station_geo_ranked = self.summarizer.join_rankings(
+            df_rankings=df_rankings, df_station_geo=df_station_geo
+        )
 
-        json_report = make_report(
-            df_hourly=export_groups_by_stations(df_hourly),
-            # Don't use orient here, keep json to get GeoJSON string
-            df_station_geo=df_station_geo.to_json(),
-            df_station_ranking=df_rankings.to_dict(orient="records"),
+        # make a dict with dictionary-form, don't use dataframes
+        report_export = dict(
+            {
+                "df_summary_hourly": export_groups_by_stations(df_hourly),
+                "df_station_ranking": df_rankings.to_dict(orient="records"),
+            }
         )
 
         # Save individual report files
         # Save the geojson with special option
-        with open(self.paths.out / "stations-with-ntas.geojson", "wb") as file:
-            df_station_geo.to_file(file, driver="GeoJSON")
+        with open(self.paths.out / "station_geo_ranked.geojson", "wb") as file:
+            df_station_geo_ranked.to_file(file, driver="GeoJSON")
 
-        for key, data in json_report.items():
+        for key, data in report_export.items():
             # write the json
             export_json(data, self.paths.out / f"{key}.json")
             export_msgpack(data, self.paths.out / f"{key}.msgpack")
 
         # Save a packed report file
-        path_report = self.paths.out / "full-report.json"
-        logging.info(f"Saving report to: {path_report}")
-        export_json(json_report, path_report)
-        export_msgpack(json_report, path_report)
+        # path_report = self.paths.out / "full-report.json"
+        # logging.info(f"Saving report to: {path_report}")
+        # export_json(json_report, path_report)
+        # export_msgpack(json_report, path_report)
+        if os.getenv("SQLALCHEMY_CONN") is not None:
+            logging.info(df_hourly.info())
+            export_hourly_sql(df_hourly)
 
 
 if __name__ == "__main__":

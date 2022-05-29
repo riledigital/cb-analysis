@@ -1,9 +1,16 @@
 # # Generate JSON report data
 import json
 import logging
+import os
 import msgpack
 import pickle
 from pathlib import Path
+
+import pandas as pd
+from sqlalchemy import create_engine
+
+if os.getenv("SQLALCHEMY_CONN"):
+    engine = create_engine(os.getenv("SQLALCHEMY_CONN"))
 
 
 def load_pickle():
@@ -26,22 +33,6 @@ def export_msgpack(input_dict, path_report) -> Path:
         msgpack.dump(input_dict, f)
 
     pass
-
-
-def make_report(df_station_geo, df_hourly, df_station_ranking):
-    """
-    Generate a JSON file with the report
-    """
-    # Keys of each dict should be station_id
-
-    report = dict(
-        {
-            "geo": df_station_geo,
-            "hourly_breakdown": df_hourly,
-            "ranking": df_station_ranking,
-        }
-    )
-    return report
 
 
 def export_json(json_data, path_report):
@@ -78,5 +69,18 @@ def export_groups_by_stations(df) -> dict:
     return grouped
 
 
-if __name__ == "__main__":
-    load_pickle()
+def export_hourly_sql(df: pd.DataFrame) -> None or int:
+    logging.info(f"Exporting to SQL database...")
+    with engine.connect() as connection:
+        result = df.to_sql(
+            name="summary_hourly",
+            con=connection,
+            if_exists="replace",
+            chunksize=5000,
+            method="multi",
+        )
+    logging.info(f"{result} rows affected")
+
+
+# if __name__ == "__main__":
+#     # load_pickle()
