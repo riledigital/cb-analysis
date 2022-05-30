@@ -1,7 +1,18 @@
 version: '3.5'
 
 services:
-  postgres:
+  app:
+    build: ./cbserver
+    platform: linux/amd64
+    container_name: cbserver
+    environment:
+      SQLALCHEMY_CONN: postgresql://postgres:password@db:5432/postgres
+    ports:
+      - "3000:3000"
+    networks:
+      - cbanalysis
+    restart: unless-stopped
+  db:
     container_name: db
     image: postgres:14-alpine3.15
     environment:
@@ -13,11 +24,12 @@ services:
     ports:
       - "5432:5432"
     networks:
-      - postgres
+      - cbanalysis
     restart: unless-stopped
 
 networks:
-  postgres:
+  cbanalysis:
+    name: cbanalysis
     driver: bridge
 
 volumes:
