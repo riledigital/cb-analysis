@@ -31,8 +31,7 @@ def index():
 
 @app.route("/hourly")
 def hourly():
-    json_data = request.get_json(force=True)
-    short_name = json_data["short_name"]
+    short_name = request.args["short_name"]
     result_proxy = SummaryHourly.query.filter(
         SummaryHourly.short_name == short_name
     ).all()
@@ -43,7 +42,7 @@ def hourly():
             column: str(getattr(row, column)) for column in row.__table__.c.keys()
         }
         results_list.append(row_as_dict)
-    return {"data": results_list, "short_name": json_data["short_name"]}
+    return {"data": results_list, "short_name": short_name}
 
 
 if __name__ == "__main__":
