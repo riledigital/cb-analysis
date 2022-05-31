@@ -4,11 +4,14 @@ import os
 
 from dotenv import load_dotenv
 from flask import Flask, request
+from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 
 load_dotenv()
 
 app = Flask(__name__)
+# Add CORS origins here
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("SQLALCHEMY_CONN")
 db = SQLAlchemy(app)
 
@@ -29,7 +32,7 @@ def index():
     return "Server is live!"
 
 
-@app.route("/hourly")
+@app.route("/api/hourly")
 def hourly():
     short_name = request.args["short_name"]
     result_proxy = SummaryHourly.query.filter(
@@ -37,12 +40,12 @@ def hourly():
     ).all()
     results_list = []
     for row in result_proxy:
-        print(row)
-        row_as_dict = {
-            column: str(getattr(row, column)) for column in row.__table__.c.keys()
-        }
+        # row_as_dict = {
+        #     column: str(getattr(row, column)) for column in row.__table__.c.keys()
+        # }
+        row_as_dict = {"start_hour": row.start_hour, "counts": row.counts}
         results_list.append(row_as_dict)
-    return {"data": results_list, "short_name": short_name}
+    return {"data": results_list}
 
 
 if __name__ == "__main__":
