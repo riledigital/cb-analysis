@@ -34,7 +34,9 @@ def index():
 
 @app.route("/api/hourly")
 def hourly():
-    short_name = request.args["short_name"]
+    short_name = request.args.get("short_name")
+    if short_name is None:
+        return "No short_name specified", 204
     result_proxy = SummaryHourly.query.filter(
         SummaryHourly.short_name == short_name
     ).all()
