@@ -1,8 +1,10 @@
 # CBAnalysis
 
-These scripts are used to automatically download and create summary files for the [Citi Bike Planner](https://github.com/rl2999/citibike-planner).
+This is a companion REST API server + analysis module for [Citi Bike Planner](https://github.com/riledigital/citibike-planner).
 
 # Installation
+
+Use conda to create the environment. You may use the optional Docker Compose setup to start the cbanalysis API server which provides a `/api/hourly/` endpoint, allowing queries by `?short_name=XXXX` to retrieve the hourly summary for an individual station. 
 
 ## Dev environment warning
 
