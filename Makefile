@@ -7,4 +7,4 @@ format:
 	poetry run black cbanalysis scripts tests
 
 run:
-	poetry run python3 ./scripts/run.py
+	poetry run python3 ./cbanalysis/cli.py
