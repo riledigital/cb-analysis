@@ -7,4 +7,4 @@ format:
 	poetry run black cbanalysis scripts tests
 
 run:
-	poetry run python3 ./cbanalysis/cli.py
+	gunicorn --workers=8 -b 0.0.0.0:80 'cbserver:create_app()'

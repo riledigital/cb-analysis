@@ -4,3 +4,4 @@ flask_sqlalchemy
 SQLAlchemy
 psycopg2
 flask-cors
+gunicorn
