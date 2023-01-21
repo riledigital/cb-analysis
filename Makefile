@@ -6,5 +6,11 @@ lint:
 format:
 	poetry run black cbanalysis scripts tests
 
-run:
+run-server:
 	gunicorn --workers=8 -b 0.0.0.0:80 'cbserver:create_app()'
+
+install:
+	poetry install
+
+run-analysis-job:
+	python3 ./cbanalysis/cli.py

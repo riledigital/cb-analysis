@@ -8,15 +8,15 @@ from time import strptime
 
 import pandas as pd
 
-from cbanalysis.data_prep import Prepper
-from cbanalysis.reports import (
+from data_prep import Prepper
+from reports import (
     export_groups_by_stations,
     export_hourly_sql,
     export_json,
     export_msgpack,
 )
-from cbanalysis.summarize import Summarizer
-from cbanalysis.utils import WorkingPaths
+from summarize import Summarizer
+from utils import WorkingPaths
 
 logging.info(f"Version: {__version__}")
 
@@ -29,6 +29,7 @@ class Main:
 
     def run(self, start_date, end_date):
         # Downlaod data
+        logging.info(f"{os.getenv('START_DATE')}-{os.getenv('END_DATE')}")
         fetched = self.fetch(start_date, end_date)
         # Process summaries
         summarized = self.summarize(fetched["stations"], fetched["rides"])
