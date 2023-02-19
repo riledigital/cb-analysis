@@ -8,15 +8,15 @@ from time import strptime
 
 import pandas as pd
 
-from data_prep import Prepper
-from reports import (
+from .data_prep import Prepper
+from .reports import (
     export_groups_by_stations,
     export_hourly_sql,
     export_json,
     export_msgpack,
 )
-from summarize import Summarizer
-from utils import WorkingPaths
+from .summarize import Summarizer
+from .utils import WorkingPaths
 
 logging.info(f"Version: {__version__}")
 
@@ -27,7 +27,7 @@ class Main:
         self.dp = Prepper(self.paths)
         self.summarizer = Summarizer(self.paths)
 
-    def run(self, start_date, end_date):
+    def run(self, start_date="2022-01-01", end_date="2022-02-01"):
         # Downlaod data
         logging.info(f"{os.getenv('START_DATE')}-{os.getenv('END_DATE')}")
         fetched = self.fetch(start_date, end_date)

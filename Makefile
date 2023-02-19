@@ -14,3 +14,6 @@ install:
 
 run-analysis-job:
 	python3 ./cbanalysis/cli.py
+
+build-docker-image:
+	docker build --tag cbanalysis .

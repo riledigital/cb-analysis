@@ -8,7 +8,7 @@ authors = ["Ri Le <r.le@columbia.edu>"]
 # Important: Use ~ to limit to only 3.11 and not 3.12
 python = "~3.11"
 Shapely = "^2.0.1"
-Fiona = "^1.8.17"
+Fiona = "~1.9"
 Rtree = "^1.0.1"
 geopandas = "^0.12.2"
 pandas = "^1.1.4"
@@ -18,15 +18,18 @@ pyjanitor = "^0.24.0"
 click = "^8.0.3"
 tqdm = "^4.62.3"
 scipy = "^1.10.0"
-jupyter-ydoc = "^0.3.1"
-jupyter-server-ydoc = "^0.7.0"
+pyclean = "^2.0.0"  
+msgpack = "^1.0.4"
+sqlalchemy = "^2.0.4"
+python-dotenv = "^0.21.1"
 
 [tool.poetry.dev-dependencies]
 pylint = "^2.6.0"
 pytest = "^7.2"
 black = "^22.1.0"
 jupyterlab = "^3.2.9"
-pyclean = "^2.0.0"
+jupyter-ydoc = "^0.3.1"
+jupyter-server-ydoc = "^0.7.0"
 
 
 [tool.poetry.scripts]

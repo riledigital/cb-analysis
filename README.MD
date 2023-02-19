@@ -4,18 +4,11 @@ This is a companion REST API server + analysis module for [Citi Bike Planner](ht
 
 # Installation
 
-Use conda to create the environment. You may use the optional Docker Compose setup to start the cbanalysis API server which provides a `/api/hourly/` endpoint, allowing queries by `?short_name=XXXX` to retrieve the hourly summary for an individual station. 
-
-## Dev environment warning
-
-Due to system-level dependencies and general Poetry + pandas + scipy weirdness, it's safest to install dependencies for now through conda. `conda env create -f environment.yml` 
-- Fill parameters in `.env` file, copy from `.env.sample`
-- `conda activate cbanalysis`
-- `python3 ./cbanalysis/cli.py`
-## Makefile
+Install `pyenv` and `poetry`. Then run `make install` and `make run-analysis-job`. 
 
 See the `Makefile` for tasks to run.
 
+A Docker image is available which runs `scripts/main.py`.
 ## Environment Variables
 
 Use env variables to configure the scripts. See `.env.sample` 

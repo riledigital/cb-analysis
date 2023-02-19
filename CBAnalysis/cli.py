@@ -8,6 +8,7 @@ import os
 
 load_dotenv()
 
+
 @click.command()
 def run():
     app = Main(start_dir=Path("temp"))
