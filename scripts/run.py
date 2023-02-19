@@ -10,5 +10,9 @@ print(sys.path)
 
 from cbanalysis.main import Main
 
-main = Main(start_dir=Path("temp"))
+# Specify temp dir
+temp = Path("temp")
+temp.mkdir(exist_ok=True)
+
+main = Main(start_dir=temp)
 main.run()

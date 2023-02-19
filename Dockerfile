@@ -14,4 +14,4 @@ RUN apt-get update && apt-get install -y libgdal-dev
 RUN gdal-config --version
 # Install all Python deps
 RUN poetry install --no-root --no-dev
-CMD ["poetry", "run", "python3", "scripts/cli.py"]
+CMD ["poetry", "run", "python3", "scripts/run.py"]

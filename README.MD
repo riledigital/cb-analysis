@@ -4,7 +4,8 @@ This is a companion REST API server + analysis module for [Citi Bike Planner](ht
 
 # Installation
 
-Install `pyenv` and `poetry`. Then run `make install` and `make run-analysis-job`. 
+Install `pyenv` and `poetry`. Install GDAL with your system package manager. Then run `make install` and `make run-analysis-job`. 
+
 
 See the `Makefile` for tasks to run.
 

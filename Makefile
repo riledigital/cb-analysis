@@ -1,5 +1,8 @@
-.PHONY: lint format
+.PHONY: lint format test
 
+test:
+	poetry run pytest
+	
 lint:
 	poetry run pylint cbanalysis
 
