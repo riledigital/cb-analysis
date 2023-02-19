@@ -1,3 +1,4 @@
+import datetime
 import operator
 from bs4 import BeautifulSoup
 from urllib.request import urlopen
@@ -35,25 +36,13 @@ def parse_filenames_to_metadata(filenames):
     result.append(record)
   return result
 
-def date_is_after(start, end):
-  if int(end.year) > int(start.year):
-    return True
-  return int(end.month) >= int(start.month)
+def parse_meta_date(meta):
+  return datetime.datetime(meta['year'], meta['month'], 1)
 
-def compare_date(start, end, op):
-  if op is 'gt':
-    compare_first = lambda x, y: operator.gt(x, y)
-    compare_second = lambda x, y: operator.lt(x, y)
-  if op is 'lt':
-    compare_first = lambda x, y: operator.lt(x, y)
-    compare_second = lambda x, y: operator.gt(x, y)
-    
-  if compare_first(int(end.year), int(start.year)):
-    return True
-  return compare_second(int(end.month), int(start.month))
-  
 def filter_range(files, start_date, end_date):
-  return [*filter(lambda file: compare_date(start_date, end_date, 'gt') and compare_date(start_date, end_date, 'lt'), files)]
+  start = parse_meta_date(start_date)
+  end = parse_meta_date(end_date)
+  return [*filter(lambda file: start <= parse_meta_date(file['date']) and end >= parse_meta_date(file['date']))]
   
 
 def main(): 
