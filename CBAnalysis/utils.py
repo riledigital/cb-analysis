@@ -7,10 +7,10 @@ from tempfile import TemporaryDirectory
 
 def touchdir(dir: str):
     if not os.path.exists(dir):
-        logging.warn(f"Created: {dir}")
+        logging.info(f"Created: {dir}")
         os.makedirs(dir)
     else:
-        logging.warn(f"Skipped mkdir: {dir}")
+        logging.info(f"Skipped mkdir: {dir}")
 
 
 class WorkingPaths:
