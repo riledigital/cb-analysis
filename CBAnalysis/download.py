@@ -1,20 +1,21 @@
+import logging
 from pprint import pprint
 
 import datetime
 from bs4 import BeautifulSoup
-from urllib.request import urlopen
+import requests
 import re
-
-
+from tqdm import tqdm
+    
+  
 def download_file_list():
     URL = "https://s3.amazonaws.com/tripdata"
-    with urlopen(URL) as response:
-        html_doc = response.read()
-        soup = BeautifulSoup(html_doc, "html.parser")
-        tags = soup.find_all("key")
-        filenames = [tag.string for tag in tags]
-        return filenames
-        # print(soup.prettify())
+    r = requests.get(URL)
+    html_doc = r.text
+    soup = BeautifulSoup(html_doc, "html.parser")
+    tags = soup.find_all("key")
+    filenames = [tag.string for tag in tags]
+    return filenames
 
 
 def parse_date_from_filename(filename):
@@ -59,8 +60,8 @@ def filter_range(files, start_date, end_date):
     return list(filter(compare, files))
 
 
-def download_date_range(
-    start={"year": "2020", "month": "01"}, end={"year": "2020", "month": "02"}
+def get_files_for_date_range(
+    start={"year": "2019", "month": "01"}, end={"year": "2019", "month": "02"}
 ):
     filenames = download_file_list()
     all_downloads = parse_filenames_to_metadata(filenames)
@@ -69,4 +70,30 @@ def download_date_range(
     return filtered_downloads
 
 
+def download_single_zip(filename):
+    base = "https://s3.amazonaws.com/tripdata"
+    logging.info(f"Downloading zip: {base + filename}")
+    return requests.get(base + filename, stream=True)
 
+
+def save_zipfile_to_disk(resp, file):
+    logging.info(f"Saving zip: {file}")
+    total_size_in_bytes = int(resp.headers.get("content-length", 0))
+    progress_bar = tqdm(total=total_size_in_bytes, unit="iB", unit_scale=True)
+    with open(file, "wb") as fd:
+        for chunk in resp.iter_content(chunk_size=128):
+            fd.write(chunk)
+            progress_bar.update(len(chunk))
+        progress_bar.close()
+        if total_size_in_bytes != 0 and progress_bar.n != total_size_in_bytes:
+            print("ERROR, something went wrong")
+
+def main():
+    files = get_files_for_date_range()
+    for file in files:
+        resp = download_single_zip(file["filename"])
+        save_zipfile_to_disk(resp, "./temp/zip/" + file['filename'])
+        
+        
+if __name__ == "__main__":
+    main()
