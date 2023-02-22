@@ -14,6 +14,8 @@ import zipfile
 import uuid
 import glob
 import os
+
+from .download import download_and_save
 from .utils import touchdir
 
 logging.basicConfig(level=logging.INFO)

@@ -8,7 +8,9 @@ from time import strptime
 
 import pandas as pd
 
+
 from .data_prep import Prepper
+from .download import download_and_save
 from .reports import (
     export_groups_by_stations,
     export_hourly_sql,
@@ -35,6 +37,10 @@ class Main:
         summarized = self.summarize(fetched["stations"], fetched["rides"])
         # Export
         self.export(summarized["hourly"], fetched["stations"], summarized["ranking"])
+        
+    def download_ride_range(self, start, end):
+        logging.info(f"Downloading ZIPs from Citi Bike from {start} to {end}")
+        download_and_save(start, end, str(self.paths.zip))
 
     def fetch(self, start_date, end_date):
         logging.info(f"Downloading ZIPs from Citi Bike from {start_date} to {end_date}")

@@ -88,12 +88,12 @@ def save_zipfile_to_disk(resp, file):
         if total_size_in_bytes != 0 and progress_bar.n != total_size_in_bytes:
             print("ERROR, something went wrong")
 
-def main():
-    files = get_files_for_date_range()
+def download_and_save(start={"year": "2019", "month": "01"}, end={"year": "2019", "month": "02"}, path_to_zips="./temp/zip/" ):
+    files = get_files_for_date_range(start, end)
     for file in files:
         resp = download_single_zip(file["filename"])
-        save_zipfile_to_disk(resp, "./temp/zip/" + file['filename'])
+        save_zipfile_to_disk(resp, path_to_zips + file['filename'])
         
         
 if __name__ == "__main__":
-    main()
+    download_and_save()
