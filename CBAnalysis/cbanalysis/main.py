@@ -30,41 +30,25 @@ class Main:
         self.summarizer = Summarizer(self.paths)
 
     def run(self, start_date="2022-01-01", end_date="2022-02-01"):
-        # Downlaod data
+        # Download data
         logging.info(f"{os.getenv('START_DATE')}-{os.getenv('END_DATE')}")
         fetched = self.fetch(start_date, end_date)
         # Process summaries
         summarized = self.summarize(fetched["stations"], fetched["rides"])
         # Export
         self.export(summarized["hourly"], fetched["stations"], summarized["ranking"])
-        
+
     def download_ride_range(self, start, end):
         logging.info(f"Downloading ZIPs from Citi Bike from {start} to {end}")
-        download_and_save(start, end, str(self.paths.zip))
+        start_parsed = date.fromisoformat(start)
+        end_parsed = date.fromisoformat(end)
+        download_and_save(start_parsed, end_parsed, str(self.paths.zip))
 
     def fetch(self, start_date, end_date):
         logging.info(f"Downloading ZIPs from Citi Bike from {start_date} to {end_date}")
 
         # download for range
-        # months_in_range("2021-12-01", "2022-05-01")
-        def months_in_range(start, end):
-            start = date.fromisoformat(start)
-            end = date.fromisoformat(end)
-            months = list()
-            current = start
-            while current <= end:
-                months.append(current)
-                if current.month == 12:
-                    current = current.replace(year=current.year + 1, month=1)
-                else:
-                    current = current.replace(month=current.month + 1)
-            return months
-
-        for target in months_in_range(start_date, end_date):
-            logging.info(f"Fetching: {target.year}, {target.month}")
-            self.dp.download_ride_zip(
-                year=target.year, month=target.month, use_jc=False
-            )
+        self.download_ride_range(start_date, end_date)
 
         logging.info("Combining CSVs...")
         all_months = self.dp.concat_csvs()

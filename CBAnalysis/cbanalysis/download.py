@@ -1,13 +1,11 @@
 import logging
-from pprint import pprint
-
 import datetime
 from bs4 import BeautifulSoup
 import requests
 import re
 from tqdm import tqdm
-    
-  
+
+
 def download_file_list():
     URL = "https://s3.amazonaws.com/tripdata"
     r = requests.get(URL)
@@ -71,9 +69,12 @@ def get_files_for_date_range(
 
 
 def download_single_zip(filename):
-    base = "https://s3.amazonaws.com/tripdata"
+    base = "https://s3.amazonaws.com/tripdata/"
     logging.info(f"Downloading zip: {base + filename}")
-    return requests.get(base + filename, stream=True)
+    res = requests.get(base + filename, stream=True)
+    if res.status_code != 200:
+        raise requests.RequestException("Nonfile response")
+    return res
 
 
 def save_zipfile_to_disk(resp, file):
@@ -88,12 +89,17 @@ def save_zipfile_to_disk(resp, file):
         if total_size_in_bytes != 0 and progress_bar.n != total_size_in_bytes:
             print("ERROR, something went wrong")
 
-def download_and_save(start={"year": "2019", "month": "01"}, end={"year": "2019", "month": "02"}, path_to_zips="./temp/zip/" ):
-    files = get_files_for_date_range(start, end)
+
+def download_and_save(
+    start: datetime.date, end: datetime.date, path_to_zips="./temp/zip/"
+):
+    parsed_date_dict_start = {"year": start.year, "month": start.month}
+    parsed_date_dict_end = {"year": end.year, "month": end.month}
+    files = get_files_for_date_range(parsed_date_dict_start, parsed_date_dict_end)
     for file in files:
         resp = download_single_zip(file["filename"])
-        save_zipfile_to_disk(resp, path_to_zips + file['filename'])
-        
-        
+        save_zipfile_to_disk(resp, path_to_zips + file["filename"])
+
+
 if __name__ == "__main__":
     download_and_save()
