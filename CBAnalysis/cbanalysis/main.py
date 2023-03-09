@@ -42,11 +42,9 @@ class Main:
         logging.info(f"Downloading ZIPs from Citi Bike from {start} to {end}")
         start_parsed = date.fromisoformat(start)
         end_parsed = date.fromisoformat(end)
-        download_and_save(start_parsed, end_parsed, str(self.paths.zip))
+        download_and_save(start_parsed, end_parsed, self.paths.zip, self.paths.csv)
 
     def fetch(self, start_date, end_date):
-        logging.info(f"Downloading ZIPs from Citi Bike from {start_date} to {end_date}")
-
         # download for range
         self.download_ride_range(start_date, end_date)
 
