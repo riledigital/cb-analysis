@@ -1,11 +1,8 @@
-from dotenv import load_dotenv
 from pathlib import Path
 import click
 import logging
 import os
 from cbanalysis.main import Main
-
-load_dotenv()
 
 
 @click.command()
